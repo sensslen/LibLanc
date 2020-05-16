@@ -1,0 +1,20 @@
+{
+  "name": "LibLanc",
+  "keywords": "lanc, video, camera",
+  "description": "Allow an Arduino sketch to communicate with a video camera that supports the lanc protocol",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sensslen/LibLanc.git"
+  },
+  "frameworks": "arduino",
+  "platforms": [
+    "atmelavr",
+    "teensy"
+  ],
+  "dependencies": [
+    {
+      "name": "TimerOne",
+      "version": ">1.1.0"
+    }
+  ]
+}

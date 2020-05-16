@@ -3,3 +3,7 @@
 Lanc::Lanc(void)
 {
 }
+
+void Lanc::initialize()
+{
+}

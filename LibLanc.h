@@ -8,6 +8,7 @@ class Lanc
 {
 public:
   Lanc(void);
+  void initialize(void);
 
 protected:
 private:
