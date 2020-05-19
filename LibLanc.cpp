@@ -5,11 +5,15 @@
 
 #define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
 
-Lanc::Lanc(uint8_t inputPin, uint8_t outputPin)
-{
-    _inputPin = inputPin;
-    _outputPin = _outputPin;
+Lanc::instance;
 
+Lanc::InstanceGet()
+{
+    return &instance;
+}
+
+Lanc::Lanc()
+{
     tLancCommand *next = NULL;
     for (auto element : _commandBuffers)
     {
@@ -25,11 +29,14 @@ Lanc::Lanc(uint8_t inputPin, uint8_t outputPin)
     _pendingTransmission.pending = false;
 }
 
-void Lanc::Start(void (*pinHandler)(void), void (*timerHandler)(void))
+void Lanc::Setup(uint8_t inputPin, uint8_t outputPin)
 {
+    _inputPin = inputPin;
+    _outputPin = _outputPin;
+
     Timer1.initialize(LANC_BIT_TIME_US);
-    Timer1.attachInterrupt(timerHandler);
-    attachInterrupt(digitalPinToInterrupt(_inputPin), pinHandler, FALLING);
+    Timer1.attachInterrupt(timerIsr);
+    attachInterrupt(digitalPinToInterrupt(_inputPin), pinIsr, FALLING);
 }
 
 bool transmitCommandData(uint8_t data)
@@ -68,7 +75,12 @@ void Lanc::AutoFocus(bool far)
     return transmitCommandData(0x45);
 }
 
-void Lanc::PinInterrupt(void)
+static void pinIsr()
+{
+    InstanceGet->pinInterrupt();
+}
+
+void Lanc::pinInterrupt(void)
 {
     unsigned long newTime = micros();
     if (_waitForStartBit)
@@ -112,7 +124,12 @@ void Lanc::PinInterrupt(void)
     _lastPinChange = newTime;
 }
 
-void Lanc::TimerInterrupt(void)
+void Lanc::timerIsr()
+{
+    InstanceGet->timerInterrupt();
+}
+
+void Lanc::timerInterrupt(void)
 {
     if (_waitForStartBit)
     {

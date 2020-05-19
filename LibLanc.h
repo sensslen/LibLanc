@@ -4,17 +4,21 @@
 class Lanc
 {
 public:
-  Lanc(uint8_t inputPin, uint8_t outputPin);
   /**
-   * Since Interrupts are System global, the program
-   * setting up the Lanc protocol must specify a function
-   * that handles the pin Interrupt and forwards this call
-   * to the class method PinInterrupt.
+   * Get the Lanc singleton instance,
    */
-  void Start(void (*pinHandler)(void), void (*timerHandler)(void));
-  void PinInterrupt(void);
-  void TimerInterrupt(void);
+  static Lanc *InstanceGet();
 
+private:
+  static Lanc instance;
+  Lanc();
+  Setup(uint8_t inputPin, uint8_t outputPin);
+  static void timerIsr();
+  void timerInterrupt();
+  static void pinIsr();
+  void pinInterrupt();
+
+public:
   /**
    * Set the zoom speed of the camera. 
    * @param stepSize Zoom in or out. The value must be in the range of [-8..8].
@@ -28,14 +32,14 @@ public:
   /**
    * Change the manual focus
    * @param far Whether to pusht the Focus farther away or closer
-   * @retval  true   Zoom command successfully scheduled for transmission to the camera
+   * @retval  true   Focus command successfully scheduled for transmission to the camera
    * @retval  false  Failed to transmit the command - either the transmission buffer 
    *                 is full or the passed parameter is out of range
    */
   bool Focus(bool far);
   /**
    * Toggle Autofocus
-   * @retval  true   Zoom command successfully scheduled for transmission to the camera
+   * @retval  true   AutoFocus Toggle command successfully scheduled for transmission to the camera
    * @retval  false  Failed to transmit the command - either the transmission buffer 
    *                 is full or the passed parameter is out of range
    */
