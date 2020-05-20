@@ -1,2 +1,7 @@
 Lanc	KEYWORD1
-initialize	KEYWORD2
+InstanceGet	KEYWORD2
+Setup	KEYWORD2
+Zoom	KEYWORD2
+Focus	KEYWORD2
+AutoFocus	KEYWORD2
+LibLanc	KEYWORD1
