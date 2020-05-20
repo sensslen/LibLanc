@@ -1,6 +1,8 @@
 #ifndef LibLanc_h
 #define LibLanc_h
 
+#include <stdint.h>
+
 class Lanc
 {
 public:
@@ -8,17 +10,11 @@ public:
    * Get the Lanc singleton instance,
    */
   static Lanc *InstanceGet();
-
-private:
-  static Lanc instance;
-  Lanc();
-  Setup(uint8_t inputPin, uint8_t outputPin);
-  static void timerIsr();
-  void timerInterrupt();
-  static void pinIsr();
-  void pinInterrupt();
-
-public:
+  /**
+   * Setup the lanc instance by assigning Pins to be used.
+   * This function also starts the Timer.
+   */
+  void Setup(uint8_t inputPin, uint8_t outputPin);
   /**
    * Set the zoom speed of the camera. 
    * @param stepSize Zoom in or out. The value must be in the range of [-8..8].
@@ -44,6 +40,14 @@ public:
    *                 is full or the passed parameter is out of range
    */
   bool AutoFocus();
+
+private:
+  static Lanc *instance;
+  Lanc();
+  static void timerIsr();
+  void timerInterrupt();
+  static void pinIsr();
+  void pinInterrupt();
 
 protected:
 private:

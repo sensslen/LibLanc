@@ -5,41 +5,42 @@
 
 #define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
 
-Lanc::instance;
+Lanc *Lanc::instance = nullptr;
 
-Lanc::InstanceGet()
+Lanc *Lanc::InstanceGet()
 {
-    return &instance;
+    if (instance == nullptr)
+    {
+        instance = new Lanc();
+    }
+    return instance;
 }
 
 Lanc::Lanc()
 {
-    tLancCommand *next = NULL;
-    for (auto element : _commandBuffers)
-    {
-        element.next = next;
-        next = &element;
-    }
-    _lancCommandHeap = next;
-    _currentTransmission = null;
-    _pendingTransmissions = null;
     _currentBit = 0;
     _waitForStartBit = true;
-    memset(_currentTransmission, 0xFF, sizeof(_currentTransmission));
+    memset(&_currentTransmission.data, 0xFF, sizeof(_currentTransmission.data));
+    _currentTransmission.transmitCount = 0;
     _pendingTransmission.pending = false;
 }
 
 void Lanc::Setup(uint8_t inputPin, uint8_t outputPin)
 {
+    _lastPinChange = micros();
+
     _inputPin = inputPin;
-    _outputPin = _outputPin;
+    _outputPin = outputPin;
+
+    pinMode(_outputPin, OUTPUT);
+    pinMode(_inputPin, INPUT);
 
     Timer1.initialize(LANC_BIT_TIME_US);
     Timer1.attachInterrupt(timerIsr);
     attachInterrupt(digitalPinToInterrupt(_inputPin), pinIsr, FALLING);
 }
 
-bool transmitCommandData(uint8_t data)
+bool Lanc::transmitCommandData(uint8_t data)
 {
     if (_pendingTransmission.pending)
     {
@@ -51,7 +52,7 @@ bool transmitCommandData(uint8_t data)
     return true;
 }
 
-void Lanc::Zoom(int8_t stepSize)
+bool Lanc::Zoom(int8_t stepSize)
 {
     if (stepSize == 0)
     {
@@ -65,19 +66,19 @@ void Lanc::Zoom(int8_t stepSize)
     return transmitCommandData((stepSize < 0) ? ((-stepSize * 2) + 0x10) : (stepSize * 2));
 }
 
-void Lanc::Focus(bool far)
+bool Lanc::Focus(bool far)
 {
     return transmitCommandData((far) ? (0x45) : (0x47));
 }
 
-void Lanc::AutoFocus(bool far)
+bool Lanc::AutoFocus()
 {
     return transmitCommandData(0x45);
 }
 
-static void pinIsr()
+void Lanc::pinIsr()
 {
-    InstanceGet->pinInterrupt();
+    instance->pinInterrupt();
 }
 
 void Lanc::pinInterrupt(void)
@@ -98,14 +99,14 @@ void Lanc::pinInterrupt(void)
                 {
                     if (_pendingTransmission.pending)
                     {
-                        memcpy(_currentTransmission, _pendingTransmission.data, sizeof(_currentTransmission));
+                        memcpy(_currentTransmission.data, _pendingTransmission.data, sizeof(_currentTransmission.data));
                         _pendingTransmission.pending = false;
                         _currentTransmission.transmitCount = 0;
                     }
                     else
                     {
                         // stay idle if there is nothing to transmit
-                        memset(_currentTransmission, 0xFF, sizeof(_currentTransmission));
+                        memset(&_currentTransmission.data, 0xFF, sizeof(_currentTransmission.data));
                     }
                 }
             }
@@ -126,7 +127,7 @@ void Lanc::pinInterrupt(void)
 
 void Lanc::timerIsr()
 {
-    InstanceGet->timerInterrupt();
+    instance->timerInterrupt();
 }
 
 void Lanc::timerInterrupt(void)
@@ -146,7 +147,7 @@ void Lanc::timerInterrupt(void)
         auto currentByte = _currentBit >> 3;
         auto currentBit = _currentBit & 0b111;
 
-        digitalWrite(_outputPin, ((_currentTransmission[currentByte] & (1 << currentBit)) > 0) ? HIGH : LOW);
+        digitalWrite(_outputPin, ((_currentTransmission.data[currentByte] & (1 << currentBit)) > 0) ? HIGH : LOW);
         if (currentBit == 0b111)
         {
             _waitForStartBit = true;
