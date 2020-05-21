@@ -7,72 +7,79 @@ class Lanc
 {
 public:
   /**
-   * Get the Lanc singleton instance,
-   */
-  static Lanc *InstanceGet();
-  /**
    * Setup the lanc instance by assigning Pins to be used.
    * This function also starts the Timer.
    */
-  void Setup(uint8_t inputPin, uint8_t outputPin);
+  Lanc(uint8_t inputPin, uint8_t outputPin);
+  /**
+   * Setup the Pins
+   */
+  void begin();
   /**
    * Set the zoom speed of the camera. 
    * @param stepSize Zoom in or out. The value must be in the range of [-8..8].
    *                 Negative values zoom out. The value of 0 is silently ignored, 
    *                 as it means no zoom and needs no telegram.
-   * @retval  true   Zoom command successfully scheduled for transmission to the camera
-   * @retval  false  Failed to transmit the command - either the transmission buffer 
-   *                 is full or the passed parameter is out of range
+   * @retval  true   Zoom command was successfully transmitted to the camera
+   * @retval  false  The passed parameter is out of range
+   * 
+   * @note This function blocks until the command has finished. This is done to ensure
+   *       proper timing. This might be improved by using timers and such.
    */
   bool Zoom(int8_t stepSize);
   /**
    * Change the manual focus
    * @param far Whether to pusht the Focus farther away or closer
-   * @retval  true   Focus command successfully scheduled for transmission to the camera
-   * @retval  false  Failed to transmit the command - either the transmission buffer 
-   *                 is full or the passed parameter is out of range
+   * 
+   * @note This function blocks until the command has finished. This is done to ensure
+   *       proper timing. This might be improved by using timers and such.
    */
-  bool Focus(bool far);
+  void Focus(bool far);
   /**
    * Toggle Autofocus
-   * @retval  true   AutoFocus Toggle command successfully scheduled for transmission to the camera
-   * @retval  false  Failed to transmit the command - either the transmission buffer 
-   *                 is full or the passed parameter is out of range
+   * 
+   * @note Maybe we could read whether the Autofocus is set by the return value 
+   *       and thus change according to the response.
+   * 
+   * @note This function blocks until the command has finished. This is done to ensure
+   *       proper timing. This might be improved by using timers and such.
    */
-  bool AutoFocus();
+  void AutoFocus();
 
 private:
-  static Lanc *instance;
-  Lanc();
-  static void timerIsr();
-  void timerInterrupt();
-  static void pinIsr();
-  void pinInterrupt();
+  /**
+   * Transmit a new Camera command.
+   * @param data The special Video Camera command that should be transmitted
+   *             to the camera
+   * 
+   * @note This function blocks until the command has finished. This is done to ensure
+   *       proper timing. This might be improved by using timers and such.
+   */
+  void tansmitVideoCameraSpecialCommand(uint8_t data);
 
-protected:
-private:
+  /**
+   * Optimized fucntion that does the actual transmission/reception.
+   * @param transmitReceiveBuffer Buffer that contains the transmission data and 
+   *                              will contain the received data after the data
+   *                              exchange completes
+   * @param repeats               Number of transmissions to execute before returning.
+   *                              lanc needs 4 Transmissions in order to safely transmit.
+   */
+  void lancTransmitReceive(uint8_t transmitReceiveBuffer[8], uint8_t repeats);
+
+  void transmitByte(uint8_t byte);
+  void receiveByte(uint8_t *byte);
+  void waitStartBit();
+  void waitNextStart();
+  void transmitOne();
+  void transmitZero();
+
   uint8_t _inputPin;
+  uint8_t _inputPinMask;
+  volatile uint8_t *_inputPort;
   uint8_t _outputPin;
-
-  bool transmitCommandData(uint8_t data);
-
-  struct
-  {
-    uint8_t data[8];
-    uint8_t transmitCount;
-  } _currentTransmission;
-  struct
-  {
-    volatile bool pending;
-    uint8_t data[8];
-  } _pendingTransmission;
-
-  uint8_t _transmitBitCounter;
-  uint8_t _transmitbyteCounter;
-
-  unsigned long _lastPinChange;
-  volatile uint8_t _currentBit;
-  bool _waitForStartBit;
+  uint8_t _outputPinMask;
+  volatile uint8_t *_outputPort;
 };
 
 #endif // LibLanc_h

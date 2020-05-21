@@ -1,55 +1,37 @@
 #include "LibLanc.h"
-#include "TimerOne.h"
 
-#define LANC_BIT_TIME_US 104
+#if defined(ARDUINO) && ARDUINO >= 100
+#include "Arduino.h"
+#else
+#include "WProgram.h"
+#endif
+
+#define LANC_BIT_TIME_US (104)
+#define LANC_HALF_BIT_TIME_US ((LANC_BIT_TIME_US) / 2)
 
 #define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
 
-Lanc *Lanc::instance = nullptr;
-
-Lanc *Lanc::InstanceGet()
+Lanc::Lanc(uint8_t inputPin, uint8_t outputPin)
 {
-    if (instance == nullptr)
-    {
-        instance = new Lanc();
-    }
-    return instance;
-}
-
-Lanc::Lanc()
-{
-    _currentBit = 0;
-    _waitForStartBit = true;
-    memset(&_currentTransmission.data, 0xFF, sizeof(_currentTransmission.data));
-    _currentTransmission.transmitCount = 0;
-    _pendingTransmission.pending = false;
-}
-
-void Lanc::Setup(uint8_t inputPin, uint8_t outputPin)
-{
-    _lastPinChange = micros();
-
     _inputPin = inputPin;
     _outputPin = outputPin;
 
-    pinMode(_outputPin, OUTPUT);
-    pinMode(_inputPin, INPUT);
-
-    Timer1.initialize(LANC_BIT_TIME_US);
-    Timer1.attachInterrupt(timerIsr);
-    attachInterrupt(digitalPinToInterrupt(_inputPin), pinIsr, FALLING);
+    _inputPort = portInputRegister(digitalPinToPort(inputPin));
+    _inputPinMask = digitalPinToBitMask(inputPin);
+    _outputPort = portOutputRegister(digitalPinToPort(outputPin));
+    _outputPinMask = digitalPinToBitMask(outputPin);
 }
 
-bool Lanc::transmitCommandData(uint8_t data)
+void Lanc::begin()
 {
-    if (_pendingTransmission.pending)
-    {
-        return false;
-    }
+    pinMode(_inputPin, INPUT);
+    pinMode(_outputPin, OUTPUT);
+}
 
-    _pendingTransmission.data[0] = LANC_VIDEO_CAMERA_SPECIAL_COMMAND;
-    _pendingTransmission.data[1] = data;
-    return true;
+void Lanc::tansmitVideoCameraSpecialCommand(uint8_t data)
+{
+    uint8_t transmitReceive[8] = {LANC_VIDEO_CAMERA_SPECIAL_COMMAND, data};
+    lancTransmitReceive(transmitReceive, 4);
 }
 
 bool Lanc::Zoom(int8_t stepSize)
@@ -63,95 +45,107 @@ bool Lanc::Zoom(int8_t stepSize)
         return false;
     }
 
-    return transmitCommandData((stepSize < 0) ? ((-stepSize * 2) + 0x10) : (stepSize * 2));
+    tansmitVideoCameraSpecialCommand((stepSize < 0) ? ((-stepSize * 2) + 0x10) : (stepSize * 2));
+    return true;
 }
 
-bool Lanc::Focus(bool far)
+void Lanc::Focus(bool far)
 {
-    return transmitCommandData((far) ? (0x45) : (0x47));
+    tansmitVideoCameraSpecialCommand((far) ? (0x45) : (0x47));
 }
 
-bool Lanc::AutoFocus()
+void Lanc::AutoFocus()
 {
-    return transmitCommandData(0x45);
+    tansmitVideoCameraSpecialCommand(0x45);
 }
 
-void Lanc::pinIsr()
+void Lanc::lancTransmitReceive(uint8_t transmitReceiveBuffer[8], uint8_t repeats)
 {
-    instance->pinInterrupt();
-}
+    // This function is time critical and optimized
+    // It takes ~3.2us for the arduino to set a pin state with the digitalWrite command
+    // It takes ~80ns for the arduino to set pin state using the direct register method
+    // delayMicroseconds(50) ~ 49us, delayMicroseconds(100) ~ 99us
 
-void Lanc::pinInterrupt(void)
-{
-    unsigned long newTime = micros();
-    if (_waitForStartBit)
+    int i = 0;
+
+    while (pulseIn(_inputPin, HIGH) < 5000)
     {
-        if (_currentBit == 0)
-        {
-            // need to wait for first start bit which must occur more than 10 ms after last change
-            if ((newTime - _lastPinChange) > 10 * 1000)
-            {
-                _waitForStartBit = false;
-                Timer1.start();
-
-                // copy pending transmission
-                if (_currentTransmission.transmitCount == 4)
-                {
-                    if (_pendingTransmission.pending)
-                    {
-                        memcpy(_currentTransmission.data, _pendingTransmission.data, sizeof(_currentTransmission.data));
-                        _pendingTransmission.pending = false;
-                        _currentTransmission.transmitCount = 0;
-                    }
-                    else
-                    {
-                        // stay idle if there is nothing to transmit
-                        memset(&_currentTransmission.data, 0xFF, sizeof(_currentTransmission.data));
-                    }
-                }
-            }
-        }
-        else if ((_currentBit & 0b111) == 0)
-        {
-            // need to wait for first start bit which must occur more than 1 ms after last change
-            if ((newTime - _lastPinChange) > 1000)
-            {
-                _waitForStartBit = false;
-                Timer1.start();
-            }
-        }
+        // Sync to next LANC message
+        // "pulseIn, HIGH" catches any 0V TO +5V TRANSITION and waits until the LANC line goes back to 0V
+        // "pulseIn" also returns the pulse duration so we can check if the previous +5V duration was long enough (>5ms) to be the pause before a new 8 byte data packet
     }
 
-    _lastPinChange = newTime;
+    while (repeats)
+    {
+        for (uint8_t bytenr = 0; bytenr < 8; bytenr++)
+        {
+            transmitByte(transmitReceiveBuffer[0]);
+            transmitByte(transmitReceiveBuffer[1]);
+            receiveByte(&transmitReceiveBuffer[2]);
+            receiveByte(&transmitReceiveBuffer[3]);
+            receiveByte(&transmitReceiveBuffer[4]);
+            receiveByte(&transmitReceiveBuffer[5]);
+            receiveByte(&transmitReceiveBuffer[6]);
+            receiveByte(&transmitReceiveBuffer[7]);
+        }
+        repeats--;
+    }
 }
 
-void Lanc::timerIsr()
+void Lanc::transmitByte(uint8_t byte)
 {
-    instance->timerInterrupt();
+    waitStartBit();
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        if (byte & (1 << i))
+        {
+            transmitOne();
+        }
+        else
+        {
+            transmitZero();
+        }
+        delayMicroseconds(LANC_BIT_TIME_US); // Wait for the bit to be transmitted
+    }
+    waitNextStart();
+}
+void Lanc::receiveByte(uint8_t *byte)
+{
+    *byte = 0;
+    waitStartBit();
+    for (uint8_t i = 0; i < 8; i++)
+    {
+        delayMicroseconds(LANC_HALF_BIT_TIME_US);
+        if (*_inputPort & _inputPinMask)
+        {
+            *byte |= 1 << i;
+        }
+        delayMicroseconds(LANC_HALF_BIT_TIME_US);
+    }
+    waitNextStart();
 }
 
-void Lanc::timerInterrupt(void)
+void Lanc::waitNextStart()
 {
-    if (_waitForStartBit)
+    transmitOne();                            // make sure to stop current transmission
+    delayMicroseconds(LANC_HALF_BIT_TIME_US); // Make sure to be in the stop bit before waiting for next byte
+    while (*_inputPort & _inputPinMask)
     {
-        // set idle
-        digitalWrite(_outputPin, HIGH);
-        Timer1.stop();
-        if (_currentBit == 0 && _currentTransmission.transmitCount < 4)
-        {
-            _currentTransmission.transmitCount++;
-        }
+        // Loop as long as the LANC line is +5V during the stop bit or between messages
     }
-    else
-    {
-        auto currentByte = _currentBit >> 3;
-        auto currentBit = _currentBit & 0b111;
+}
 
-        digitalWrite(_outputPin, ((_currentTransmission.data[currentByte] & (1 << currentBit)) > 0) ? HIGH : LOW);
-        if (currentBit == 0b111)
-        {
-            _waitForStartBit = true;
-        }
-        _currentBit++; // overflow is desired here, as we transmit a total of 256 bits
-    }
+void Lanc::waitStartBit()
+{
+    delayMicroseconds(LANC_BIT_TIME_US);
+}
+
+void Lanc::transmitOne()
+{
+    *_outputPort |= _outputPinMask;
+}
+
+void Lanc::transmitZero()
+{
+    *_outputPort &= ~_outputPinMask;
 }
