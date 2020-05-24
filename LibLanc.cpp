@@ -20,6 +20,7 @@ Lanc::Lanc(uint8_t inputPin, uint8_t outputPin)
     _inputPinMask = digitalPinToBitMask(inputPin);
     _outputPort = portOutputRegister(digitalPinToPort(outputPin));
     _outputPinMask = digitalPinToBitMask(outputPin);
+    memset(_transmitReceiveBuffer, 0xFF, sizeof(_transmitReceiveBuffer));
 }
 
 void Lanc::begin()
@@ -28,10 +29,10 @@ void Lanc::begin()
     pinMode(_outputPin, OUTPUT);
 }
 
-void Lanc::tansmitVideoCameraSpecialCommand(uint8_t data)
+void Lanc::setTransmitDataVideoCameraSpecialCommand(uint8_t data)
 {
-    uint8_t transmitReceive[8] = {LANC_VIDEO_CAMERA_SPECIAL_COMMAND, data};
-    lancTransmitReceive(transmitReceive, 4);
+    _transmitReceiveBuffer[0] = LANC_VIDEO_CAMERA_SPECIAL_COMMAND;
+    _transmitReceiveBuffer[1] = data;
 }
 
 bool Lanc::Zoom(int8_t stepSize)
@@ -45,50 +46,34 @@ bool Lanc::Zoom(int8_t stepSize)
         return false;
     }
 
-    tansmitVideoCameraSpecialCommand((stepSize < 0) ? ((-stepSize * 2) + 0x10) : (stepSize * 2));
+    setTransmitDataVideoCameraSpecialCommand((stepSize < 0) ? ((-stepSize * 2) + 0x10) : (stepSize * 2));
     return true;
 }
 
 void Lanc::Focus(bool far)
 {
-    tansmitVideoCameraSpecialCommand((far) ? (0x45) : (0x47));
+    setTransmitDataVideoCameraSpecialCommand((far) ? (0x45) : (0x47));
 }
 
 void Lanc::AutoFocus()
 {
-    tansmitVideoCameraSpecialCommand(0x45);
+    setTransmitDataVideoCameraSpecialCommand(0x45);
 }
 
-void Lanc::lancTransmitReceive(uint8_t transmitReceiveBuffer[8], uint8_t repeats)
+void Lanc::loop()
 {
-    // This function is time critical and optimized
-    // It takes ~3.2us for the arduino to set a pin state with the digitalWrite command
-    // It takes ~80ns for the arduino to set pin state using the direct register method
-    // delayMicroseconds(50) ~ 49us, delayMicroseconds(100) ~ 99us
+    syncTransmission();
 
-    int i = 0;
-
-    while (pulseIn(_inputPin, HIGH) < 5000)
+    for (uint8_t bytenr = 0; bytenr < 8; bytenr++)
     {
-        // Sync to next LANC message
-        // "pulseIn, HIGH" catches any 0V TO +5V TRANSITION and waits until the LANC line goes back to 0V
-        // "pulseIn" also returns the pulse duration so we can check if the previous +5V duration was long enough (>5ms) to be the pause before a new 8 byte data packet
-    }
-
-    while (repeats)
-    {
-        for (uint8_t bytenr = 0; bytenr < 8; bytenr++)
-        {
-            transmitByte(transmitReceiveBuffer[0]);
-            transmitByte(transmitReceiveBuffer[1]);
-            receiveByte(&transmitReceiveBuffer[2]);
-            receiveByte(&transmitReceiveBuffer[3]);
-            receiveByte(&transmitReceiveBuffer[4]);
-            receiveByte(&transmitReceiveBuffer[5]);
-            receiveByte(&transmitReceiveBuffer[6]);
-            receiveByte(&transmitReceiveBuffer[7]);
-        }
-        repeats--;
+        transmitByte(_transmitReceiveBuffer[0]);
+        transmitByte(_transmitReceiveBuffer[1]);
+        transmitByte(_transmitReceiveBuffer[2]);
+        transmitByte(_transmitReceiveBuffer[3]);
+        receiveByte(&_transmitReceiveBuffer[4]);
+        receiveByte(&_transmitReceiveBuffer[5]);
+        receiveByte(&_transmitReceiveBuffer[6]);
+        receiveByte(&_transmitReceiveBuffer[7]);
     }
 }
 
@@ -116,7 +101,7 @@ void Lanc::receiveByte(uint8_t *byte)
     for (uint8_t i = 0; i < 8; i++)
     {
         delayMicroseconds(LANC_HALF_BIT_TIME_US);
-        if (*_inputPort & _inputPinMask)
+        if (inputState())
         {
             *byte |= 1 << i;
         }
@@ -129,7 +114,7 @@ void Lanc::waitNextStart()
 {
     transmitOne();                            // make sure to stop current transmission
     delayMicroseconds(LANC_HALF_BIT_TIME_US); // Make sure to be in the stop bit before waiting for next byte
-    while (*_inputPort & _inputPinMask)
+    while (inputState())
     {
         // Loop as long as the LANC line is +5V during the stop bit or between messages
     }
@@ -148,4 +133,37 @@ void Lanc::transmitOne()
 void Lanc::transmitZero()
 {
     *_outputPort &= ~_outputPinMask;
+}
+
+bool Lanc::inputState()
+{
+    *_inputPort &_inputPinMask;
+}
+
+void Lanc::syncTransmission()
+{
+    // Sync to next LANC message
+    // lanc protocol requires a stop condition that is longer than 5 milliseconds. Since we expect this function
+    // to be called periodically and thus have a delay between completion and next start we use a lower value that
+    // is still enough to determine between stop conditions during an ongoing transmission and the stop condition
+    // between two transmissions.
+
+    // wait for long enough stop condition
+    int stopConditionStart = micros();
+    do
+    {
+        if (!inputState())
+        {
+            stopConditionStart = micros();
+        }
+
+        if ((micros() - stopConditionStart < 3000))
+        {
+            break;
+        }
+    } while (true);
+
+    // wait for start condition
+    while (inputState())
+        ;
 }
