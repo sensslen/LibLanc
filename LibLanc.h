@@ -21,6 +21,9 @@ public:
    * loose synchronization and thus transmit invalid values. Since the 
    * lanc protocol needs approximately 4 repetitions this will most likely cause 
    * the commands to not pass through to the camera.
+   * 
+   * @note This function blocks until the command has finished. This is done to ensure
+   *       proper timing. This might be improved by using timers and such.
    */
   void loop();
   /**
@@ -30,17 +33,11 @@ public:
    *                 as it means no zoom and needs no telegram.
    * @retval  true   Zoom command was successfully transmitted to the camera
    * @retval  false  The passed parameter is out of range
-   * 
-   * @note This function blocks until the command has finished. This is done to ensure
-   *       proper timing. This might be improved by using timers and such.
    */
   bool Zoom(int8_t stepSize);
   /**
    * Change the manual focus
    * @param far Whether to pusht the Focus farther away or closer
-   * 
-   * @note This function blocks until the command has finished. This is done to ensure
-   *       proper timing. This might be improved by using timers and such.
    */
   void Focus(bool far);
   /**
@@ -48,11 +45,12 @@ public:
    * 
    * @note Maybe we could read whether the Autofocus is set by the return value 
    *       and thus change according to the response.
-   * 
-   * @note This function blocks until the command has finished. This is done to ensure
-   *       proper timing. This might be improved by using timers and such.
    */
   void AutoFocus();
+  /**
+   * Set the next lanc transmission to no command
+   */
+  void ClearCommand();
 
 private:
   /**

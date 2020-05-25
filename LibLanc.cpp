@@ -39,6 +39,9 @@ bool Lanc::Zoom(int8_t stepSize)
 {
     if (stepSize == 0)
     {
+        // we actually want to stop zooming which effectively means
+        // clearing the command
+        ClearCommand();
         return true;
     }
     if ((stepSize > 8) || (stepSize < -8))
@@ -58,6 +61,12 @@ void Lanc::Focus(bool far)
 void Lanc::AutoFocus()
 {
     setTransmitDataVideoCameraSpecialCommand(0x45);
+}
+
+void Lanc::ClearCommand()
+{
+    _transmitReceiveBuffer[0] = 0xFF;
+    _transmitReceiveBuffer[1] = 0xFF;
 }
 
 void Lanc::loop()

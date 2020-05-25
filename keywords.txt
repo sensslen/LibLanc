@@ -5,3 +5,4 @@ Zoom	KEYWORD2
 Focus	KEYWORD2
 AutoFocus	KEYWORD2
 loop	KEYWORD2
+ClearCommand	KEYWORD2
