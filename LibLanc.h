@@ -76,20 +76,18 @@ private:
   void syncTransmission();
   void transmitByte(uint8_t byte);
   void receiveByte(uint8_t *byte);
-  void waitStartBit();
+  unsigned long waitStartBit();
   void waitNextStart();
   void transmitOne();
   void transmitZero();
   bool inputState();
 
   uint8_t _inputPin;
-  uint8_t _inputPinMask;
-  volatile uint8_t *_inputPort;
   uint8_t _outputPin;
-  uint8_t _outputPinMask;
-  volatile uint8_t *_outputPort;
 
   uint8_t _transmitReceiveBuffer[8];
+
+  void delayUsWithStartTime(unsigned long startTime, unsigned long waitTime);
 };
 
 #endif // LibLanc_h

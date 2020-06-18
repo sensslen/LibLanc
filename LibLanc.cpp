@@ -7,6 +7,7 @@
 #endif
 
 #define LANC_BIT_TIME_US (104)
+#define LANC_STARTBIT_TIME_US (LANC_BIT_TIME_US)
 #define LANC_HALF_BIT_TIME_US ((LANC_BIT_TIME_US) / 2)
 
 #define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
@@ -16,10 +17,6 @@ Lanc::Lanc(uint8_t inputPin, uint8_t outputPin)
     _inputPin = inputPin;
     _outputPin = outputPin;
 
-    _inputPort = portInputRegister(digitalPinToPort(inputPin));
-    _inputPinMask = digitalPinToBitMask(inputPin);
-    _outputPort = portOutputRegister(digitalPinToPort(outputPin));
-    _outputPinMask = digitalPinToBitMask(outputPin);
     memset(_transmitReceiveBuffer, 0xFF, sizeof(_transmitReceiveBuffer));
 }
 
@@ -88,7 +85,7 @@ void Lanc::loop()
 
 void Lanc::transmitByte(uint8_t byte)
 {
-    waitStartBit();
+    auto startTime = waitStartBit();
     for (uint8_t i = 0; i < 8; i++)
     {
         if (byte & (1 << i))
@@ -99,22 +96,22 @@ void Lanc::transmitByte(uint8_t byte)
         {
             transmitZero();
         }
-        delayMicroseconds(LANC_BIT_TIME_US); // Wait for the bit to be transmitted
+        delayUsWithStartTime(startTime, (i + 1) * LANC_BIT_TIME_US + LANC_STARTBIT_TIME_US); // Wait for the bit to be transmitted
     }
     waitNextStart();
 }
 void Lanc::receiveByte(uint8_t *byte)
 {
     *byte = 0;
-    waitStartBit();
+    auto startTime = waitStartBit();
     for (uint8_t i = 0; i < 8; i++)
     {
-        delayMicroseconds(LANC_HALF_BIT_TIME_US);
+        delayUsWithStartTime(startTime, i * LANC_BIT_TIME_US + LANC_HALF_BIT_TIME_US + LANC_STARTBIT_TIME_US);
         if (inputState())
         {
             *byte |= 1 << i;
         }
-        delayMicroseconds(LANC_HALF_BIT_TIME_US);
+        delayUsWithStartTime(startTime, (i + 1) * LANC_BIT_TIME_US + LANC_STARTBIT_TIME_US);
     }
     waitNextStart();
 }
@@ -129,24 +126,26 @@ void Lanc::waitNextStart()
     }
 }
 
-void Lanc::waitStartBit()
+unsigned long Lanc::waitStartBit()
 {
-    delayMicroseconds(LANC_BIT_TIME_US);
+    auto startTime = micros();
+    delayUsWithStartTime(startTime, LANC_STARTBIT_TIME_US);
+    return startTime;
 }
 
 void Lanc::transmitOne()
 {
-    *_outputPort |= _outputPinMask;
+    digitalWrite(_outputPin, HIGH);
 }
 
 void Lanc::transmitZero()
 {
-    *_outputPort &= ~_outputPinMask;
+    digitalWrite(_outputPin, LOW);
 }
 
 bool Lanc::inputState()
 {
-    *_inputPort &_inputPinMask;
+    return digitalRead(_inputPin);
 }
 
 void Lanc::syncTransmission()
@@ -175,4 +174,12 @@ void Lanc::syncTransmission()
     // wait for start condition
     while (inputState())
         ;
+}
+
+void Lanc::delayUsWithStartTime(unsigned long startTime, unsigned long waitTime)
+{
+    while ((micros() - startTime) < waitTime)
+    {
+        // loop until the delay is waited
+    }
 }
