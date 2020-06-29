@@ -24,6 +24,7 @@ void Lanc::begin()
 {
     pinMode(_inputPin, INPUT);
     pinMode(_outputPin, OUTPUT);
+    transmitZero();
 }
 
 void Lanc::setTransmitDataVideoCameraSpecialCommand(uint8_t data)
@@ -45,8 +46,15 @@ bool Lanc::Zoom(int8_t stepSize)
     {
         return false;
     }
+    if (stepSize > 0)
+    {
+        setTransmitDataVideoCameraSpecialCommand((stepSize - 1) * 2);
+    }
+    else
+    {
+        setTransmitDataVideoCameraSpecialCommand(((-stepSize - 1) * 2) + 0x10);
+    }
 
-    setTransmitDataVideoCameraSpecialCommand((stepSize < 0) ? ((-stepSize * 2) + 0x10) : (stepSize * 2));
     return true;
 }
 
@@ -62,8 +70,8 @@ void Lanc::AutoFocus()
 
 void Lanc::ClearCommand()
 {
-    _transmitReceiveBuffer[0] = 0xFF;
-    _transmitReceiveBuffer[1] = 0xFF;
+    _transmitReceiveBuffer[0] = 0;
+    _transmitReceiveBuffer[1] = 0;
 }
 
 void Lanc::loop()
@@ -118,7 +126,7 @@ void Lanc::receiveByte(uint8_t *byte)
 
 void Lanc::waitNextStart()
 {
-    transmitOne();                            // make sure to stop current transmission
+    transmitZero();                           // make sure to stop current transmission
     delayMicroseconds(LANC_HALF_BIT_TIME_US); // Make sure to be in the stop bit before waiting for next byte
     while (inputState())
     {
@@ -135,12 +143,12 @@ unsigned long Lanc::waitStartBit()
 
 void Lanc::transmitOne()
 {
-    digitalWrite(_outputPin, HIGH);
+    digitalWrite(_outputPin, LOW);
 }
 
 void Lanc::transmitZero()
 {
-    digitalWrite(_outputPin, LOW);
+    digitalWrite(_outputPin, HIGH);
 }
 
 bool Lanc::inputState()
@@ -165,7 +173,7 @@ void Lanc::syncTransmission()
             stopConditionStart = micros();
         }
 
-        if ((micros() - stopConditionStart < 3000))
+        if ((micros() - stopConditionStart > 1000))
         {
             break;
         }
