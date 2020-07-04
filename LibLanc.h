@@ -9,6 +9,8 @@ public:
   /**
    * Setup the lanc instance by assigning Pins to be used.
    * This function also starts the Timer.
+   * @param inputPin  The pin tu use to read LANC signals
+   * @param outputPin The Pin to use to send LANC signals
    */
   Lanc(uint8_t inputPin, uint8_t outputPin);
   /**
@@ -73,21 +75,20 @@ private:
    */
   void lancTransmitReceive(uint8_t transmitReceiveBuffer[8], uint8_t repeats);
 
-  void syncTransmission();
-  void transmitByte(uint8_t byte);
-  void receiveByte(uint8_t *byte);
-  unsigned long waitStartBit();
-  void waitNextStart();
+  unsigned long syncTransmission();
+  void transmitByte(uint8_t byte, unsigned long startTime);
+  void receiveByte(uint8_t *byte, unsigned long startTime);
+  unsigned long waitNextStart();
+  unsigned long waitForStartBit();
+  void waitStartBitComplete(unsigned long startTime);
   void transmitOne();
   void transmitZero();
   bool inputState();
-
-  uint8_t _inputPin;
-  uint8_t _outputPin;
+  void delayUsWithStartTime(unsigned long startTime, unsigned long waitTime);
 
   uint8_t _transmitReceiveBuffer[8];
-
-  void delayUsWithStartTime(unsigned long startTime, unsigned long waitTime);
+  uint8_t _inputPin;
+  uint8_t _outputPin;
 };
 
 #endif // LibLanc_h
