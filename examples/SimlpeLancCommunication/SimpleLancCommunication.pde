@@ -1,9 +1,7 @@
 #include <LibLanc.h>
 
-// CommunicateLanc
+// LibLanc
 // by Simon Ensslen <https://github.com/sensslen>
-
-// Demostrates how to do something with the Test library
 
 #define LANC_INPUT_PIN  2
 #define LANC_OUTPUT_PIN  3
