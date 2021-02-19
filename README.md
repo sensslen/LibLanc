@@ -1,4 +1,4 @@
-# LibLanc
+# LibLanc [![CodeFactor](https://www.codefactor.io/repository/github/sensslen/liblanc/badge)](https://www.codefactor.io/repository/github/sensslen/liblanc)
 
 This Arudino library allows to control a [Sony Lanc](http://www.boehmel.de/lanc) enabled camera. Since the Protocol has very strict timing requirements, the library is designed so that it blocks until a complete communication exchange is completed. This is triggered by calling the `loop` function.
 
