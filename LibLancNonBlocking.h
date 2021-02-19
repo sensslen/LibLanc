@@ -63,9 +63,10 @@ private:
   void setTransmitDataVideoCameraSpecialCommand(uint8_t data);
 
   void writeOne();
-  void WrizeZero();
+  void writeZero();
   bool readInput();
   int timePassed();
+  void swapBuffersIfPending();
 
   uint8_t transmitBuffers[2][8];
   uint8_t * currentTransmission;

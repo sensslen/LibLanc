@@ -1,4 +1,4 @@
-#include "LancNonBlocking.h"
+#include "LibLancNonBlocking.h"
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
@@ -23,7 +23,7 @@ LancNonBlocking::LancNonBlocking(uint8_t inputPin, uint8_t outputPin)
     currentTransmission = transmitBuffers[0];
     nextTransmission = transmitBuffers[1];
     bufferSwapPending = false;
-    currentState = SearchStart;
+    currentState = &LancNonBlocking::SearchStart;
     timeStore = 0;
 }
 
@@ -34,8 +34,8 @@ void LancNonBlocking::begin()
     writeIdle();
 }
 
-void loop() {
-    currentState();
+void LancNonBlocking::loop() {
+    (this->*currentState)();
 }
 
 bool LancNonBlocking::Zoom(int8_t stepSize)
@@ -77,12 +77,14 @@ void LancNonBlocking::ClearCommand()
 {
     nextTransmission[0] = 0;
     nextTransmission[1] = 0;
+    bufferSwapPending = true;
 }
 
 void LancNonBlocking::setTransmitDataVideoCameraSpecialCommand(uint8_t data)
 {
     nextTransmission[0] = LANC_VIDEO_CAMERA_SPECIAL_COMMAND;
     nextTransmission[1] = data;
+    bufferSwapPending = true;
 }
 
 void LancNonBlocking::writeOne()
@@ -100,8 +102,17 @@ bool LancNonBlocking::readInput()
     return digitalRead(_inputPin);
 }
 
-int timePassed() {
+int LancNonBlocking::timePassed() {
     return (micros() - timeStore);
+}
+
+void LancNonBlocking::swapBuffersIfPending() {
+    if (bufferSwapPending) {
+        bufferSwapPending = false;
+        uint8_t * tempBufferStore = nextTransmission;
+        nextTransmission = currentTransmission;
+        currentTransmission = tempBufferStore;
+    }
 }
 
 void LancNonBlocking::SearchStart() {
@@ -109,7 +120,7 @@ void LancNonBlocking::SearchStart() {
         timeStore = micros();
     }
     if (timePassed() > 3000) {
-        currentState = WaitForTransmissionStart;
+        currentState = &LancNonBlocking::WaitForTransmissionStart;
     }
 }
 
@@ -118,7 +129,7 @@ void LancNonBlocking::WaitForTransmissionStart() {
     {
         currentBit = 0;
         timeStore = micros();
-        currentState = WaitToTransmitNextBit;
+        currentState = &LancNonBlocking::WaitToTransmitNextBit;
     }
 }
 
@@ -130,7 +141,7 @@ void LancNonBlocking::WaitToTransmitNextBit() {
     {
         if (TransmitNextBit()) 
         {
-            currentState = WaitToTransmitStopBit;
+            currentState = &LancNonBlocking::WaitToTransmitStopBit;
         }
     }
 }
@@ -140,7 +151,7 @@ void LancNonBlocking::WaitToTransmitStopBit() {
     if (timePassed() >= (8 + 1) * LANC_BIT_TIME_US)
     {
         writeIdle();
-        currentState = WaitForNextStartBit;
+        currentState = &LancNonBlocking::WaitForNextStartBit;
     }
 }
 
@@ -151,9 +162,13 @@ void LancNonBlocking::WaitForNextStartBit() {
     {
         timeStore = micros();
         if (currentBit >= 8 * 8) {
-            currentState = SearchStart;
+            swapBuffersIfPending();
+            currentState = &LancNonBlocking::SearchStart;
+        } else if (currentBit >= (2 * 8)) {
+            currentState = &LancNonBlocking::WaitToReceiveNextBit;
+        } else {
+            currentState = &LancNonBlocking::WaitToTransmitNextBit;
         }
-        currentState = (currentBit < (2 * 8)) ? WaitToTransmitNextBit : WaitToReceiveNextBit;
     }
 }
 
@@ -161,16 +176,16 @@ void LancNonBlocking::WaitToReceiveNextBit() {
     uint8_t bitNr = currentBit % 8;
 
     // calculate delay from start bit in order to avoid adding up errors
-    if ((micros() - timeStore) >= (bitNr + 1) * LANC_BIT_TIME_US + LANC_HALF_BIT_TIME_US)
+    if (timePassed() >= (((bitNr + 1) * LANC_BIT_TIME_US) + LANC_HALF_BIT_TIME_US))
     {
         if (ReceiveNextBit()) 
         {
-            currentState = WaitForNextStartBit;
+            currentState = &LancNonBlocking::WaitForNextStartBit;
         }
     }
 }
 
-void LancNonBlocking::TransmitNextBit() {
+bool LancNonBlocking::TransmitNextBit() {
     uint8_t byte = currentBit / 8;
     uint8_t bit = currentBit % 8;
 
@@ -180,20 +195,20 @@ void LancNonBlocking::TransmitNextBit() {
     }
     else
     {
-        WriteZero();
+        writeZero();
     }
 
     currentBit++;
     return bit == 7;
 }
 
-void LancNonBlocking::ReceiveNextBit() {
+bool LancNonBlocking::ReceiveNextBit() {
     uint8_t byte = currentBit / 8;
     uint8_t bit = currentBit % 8;
 
-    if (inputState())
+    if (readInput())
     {
-        *currentTransmission[byte] |= 1 << bit;
+        currentTransmission[byte] |= 1 << bit;
     }
 
     currentBit++;
