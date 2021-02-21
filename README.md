@@ -1,4 +1,4 @@
-# LibLanc
+# LibLanc [![CodeFactor](https://www.codefactor.io/repository/github/sensslen/liblanc/badge)](https://www.codefactor.io/repository/github/sensslen/liblanc)
 
 This Arudino library allows to control a [Sony Lanc](http://www.boehmel.de/lanc) enabled camera.
 
