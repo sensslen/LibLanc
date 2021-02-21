@@ -1,5 +1,6 @@
 LibLanc	KEYWORD2
-Lanc	KEYWORD1
+LancNonBlocking	KEYWORD1
+LancBlocking	KEYWORD1
 begin	KEYWORD2
 Zoom	KEYWORD2
 Focus	KEYWORD2
