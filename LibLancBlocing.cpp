@@ -1,4 +1,4 @@
-#include "LibLanc.h"
+#include "LibLancBlocking.h"
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
@@ -14,28 +14,28 @@
 
 #define transmitIdle transmitZero
 
-Lanc::Lanc(uint8_t inputPin, uint8_t outputPin)
+LancBlocking::LancBlocking(uint8_t inputPin, uint8_t outputPin)
 {
     _inputPin = inputPin;
     _outputPin = outputPin;
 
-    memset(_transmitReceiveBuffer, 0xFF, sizeof(_transmitReceiveBuffer));
+    memset(_transmitReceiveBuffer, 0, sizeof(_transmitReceiveBuffer));
 }
 
-void Lanc::begin()
+void LancBlocking::begin()
 {
     pinMode(_inputPin, INPUT);
     pinMode(_outputPin, OUTPUT);
     transmitIdle();
 }
 
-void Lanc::setTransmitDataVideoCameraSpecialCommand(uint8_t data)
+void LancBlocking::setTransmitDataVideoCameraSpecialCommand(uint8_t data)
 {
     _transmitReceiveBuffer[0] = LANC_VIDEO_CAMERA_SPECIAL_COMMAND;
     _transmitReceiveBuffer[1] = data;
 }
 
-bool Lanc::Zoom(int8_t stepSize)
+bool LancBlocking::Zoom(int8_t stepSize)
 {
     if (stepSize == 0)
     {
@@ -60,23 +60,23 @@ bool Lanc::Zoom(int8_t stepSize)
     return true;
 }
 
-void Lanc::Focus(bool far)
+void LancBlocking::Focus(bool far)
 {
     setTransmitDataVideoCameraSpecialCommand((far) ? (0x45) : (0x47));
 }
 
-void Lanc::AutoFocus()
+void LancBlocking::AutoFocus()
 {
     setTransmitDataVideoCameraSpecialCommand(0x41);
 }
 
-void Lanc::ClearCommand()
+void LancBlocking::ClearCommand()
 {
     _transmitReceiveBuffer[0] = 0;
     _transmitReceiveBuffer[1] = 0;
 }
 
-void Lanc::loop()
+void LancBlocking::loop()
 {
     auto startTime = syncTransmission();
 
@@ -97,7 +97,7 @@ void Lanc::loop()
     receiveByte(&_transmitReceiveBuffer[7], startTime);
 }
 
-void Lanc::transmitByte(uint8_t byte, unsigned long startTime)
+void LancBlocking::transmitByte(uint8_t byte, unsigned long startTime)
 {
     waitStartBitComplete(startTime);
     for (uint8_t i = 0; i < 8; i++)
@@ -113,7 +113,7 @@ void Lanc::transmitByte(uint8_t byte, unsigned long startTime)
         delayUsWithStartTime(startTime, (i + 1) * LANC_BIT_TIME_US + LANC_STARTBIT_TIME_US); // Wait for the bit to be transmitted
     }
 }
-void Lanc::receiveByte(uint8_t *byte, unsigned long startTime)
+void LancBlocking::receiveByte(uint8_t *byte, unsigned long startTime)
 {
     *byte = 0;
     waitStartBitComplete(startTime);
@@ -128,7 +128,7 @@ void Lanc::receiveByte(uint8_t *byte, unsigned long startTime)
     }
 }
 
-unsigned long Lanc::waitNextStart()
+unsigned long LancBlocking::waitNextStart()
 {
     transmitIdle();                           // make sure to stop current transmission
     delayMicroseconds(LANC_HALF_BIT_TIME_US); // Make sure to be in the stop bit before waiting for next byte
@@ -136,27 +136,27 @@ unsigned long Lanc::waitNextStart()
     return waitForStartBit();
 }
 
-void Lanc::waitStartBitComplete(unsigned long startTime)
+void LancBlocking::waitStartBitComplete(unsigned long startTime)
 {
     delayUsWithStartTime(startTime, LANC_STARTBIT_TIME_US);
 }
 
-void Lanc::transmitOne()
+void LancBlocking::transmitOne()
 {
     digitalWrite(_outputPin, HIGH);
 }
 
-void Lanc::transmitZero()
+void LancBlocking::transmitZero()
 {
     digitalWrite(_outputPin, LOW);
 }
 
-bool Lanc::inputState()
+bool LancBlocking::inputState()
 {
     return digitalRead(_inputPin);
 }
 
-unsigned long Lanc::syncTransmission()
+unsigned long LancBlocking::syncTransmission()
 {
     // Sync to next LANC message
     // lanc protocol requires a stop condition that is longer than 5 milliseconds. Since we expect this function
@@ -177,7 +177,7 @@ unsigned long Lanc::syncTransmission()
     return waitForStartBit();
 }
 
-void Lanc::delayUsWithStartTime(unsigned long startTime, unsigned long waitTime)
+void LancBlocking::delayUsWithStartTime(unsigned long startTime, unsigned long waitTime)
 {
     while ((micros() - startTime) < waitTime)
     {
@@ -185,7 +185,7 @@ void Lanc::delayUsWithStartTime(unsigned long startTime, unsigned long waitTime)
     }
 }
 
-unsigned long Lanc::waitForStartBit()
+unsigned long LancBlocking::waitForStartBit()
 {
     unsigned long startTime = micros();
     while (inputState())
