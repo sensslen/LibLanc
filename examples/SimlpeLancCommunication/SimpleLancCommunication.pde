@@ -2,10 +2,11 @@
 
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>
+// This example illustrates the usage of the liblanc library in blocking mode
 
 #define LANC_INPUT_PIN  2
 #define LANC_OUTPUT_PIN  3
-Lanc lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN);
+LancBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN);
 
 void setup() {
     lanc.begin();
