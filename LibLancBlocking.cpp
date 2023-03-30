@@ -11,6 +11,7 @@
 #define LANC_HALF_BIT_TIME_US ((LANC_BIT_TIME_US) / 2)
 
 #define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
+#define LANC_VIDEO_CAMERA_NORMAL_COMMAND  0b00011000
 
 #define transmitIdle transmitZero
 
@@ -32,6 +33,12 @@ void LancBlocking::begin()
 void LancBlocking::setTransmitDataVideoCameraSpecialCommand(uint8_t data)
 {
     _transmitReceiveBuffer[0] = LANC_VIDEO_CAMERA_SPECIAL_COMMAND;
+    _transmitReceiveBuffer[1] = data;
+}
+
+void LancBlocking::setTransmitDataVideoCameraNormalCommand(uint8_t data)
+{
+    _transmitReceiveBuffer[0] = LANC_VIDEO_CAMERA_NORMAL_COMMAND;
     _transmitReceiveBuffer[1] = data;
 }
 
@@ -60,6 +67,10 @@ bool LancBlocking::Zoom(int8_t stepSize)
     return true;
 }
 
+void LancBlocking::PowerDown()
+{
+    setTransmitDataVideoCameraNormalCommand(B01011110);
+}
 void LancBlocking::Focus(bool far)
 {
     setTransmitDataVideoCameraSpecialCommand((far) ? (0x45) : (0x47));

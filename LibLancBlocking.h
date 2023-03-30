@@ -53,6 +53,7 @@ public:
    * Set the next lanc transmission to no command
    */
   void ClearCommand();
+  void PowerDown();
 
 private:
   /**
@@ -64,6 +65,7 @@ private:
    *       proper timing. This might be improved by using timers and such.
    */
   void setTransmitDataVideoCameraSpecialCommand(uint8_t data);
+  void setTransmitDataVideoCameraNormalCommand(uint8_t data);
 
   /**
    * Optimized fucntion that does the actual transmission/reception.

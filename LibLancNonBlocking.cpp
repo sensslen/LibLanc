@@ -11,6 +11,7 @@
 #define LANC_COMPLETE_BYTE_TIME (10 * LANC_BIT_TIME_US)
 
 #define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
+#define LANC_VIDEO_CAMERA_NORMAL_COMMAND 0b00011000
 
 #define writeIdle writeZero
 
@@ -73,6 +74,11 @@ void LancNonBlocking::AutoFocus()
     setTransmitDataVideoCameraSpecialCommand(0x41);
 }
 
+void LancNonBlocking::PowerDown()
+{
+    setTransmitDataVideoCameraNormalCommand(B01011110);
+}
+
 void LancNonBlocking::ClearCommand()
 {
     nextTransmission[0] = 0;
@@ -83,6 +89,13 @@ void LancNonBlocking::ClearCommand()
 void LancNonBlocking::setTransmitDataVideoCameraSpecialCommand(uint8_t data)
 {
     nextTransmission[0] = LANC_VIDEO_CAMERA_SPECIAL_COMMAND;
+    nextTransmission[1] = data;
+    bufferSwapPending = true;
+}
+
+void LancNonBlocking::setTransmitDataVideoCameraNormalCommand(uint8_t data)
+{
+    nextTransmission[0] = LANC_VIDEO_CAMERA_NORMAL_COMMAND;
     nextTransmission[1] = data;
     bufferSwapPending = true;
 }
