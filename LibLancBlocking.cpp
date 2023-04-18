@@ -5,20 +5,22 @@
 #else
 #include "WProgram.h"
 #endif
-
 #define LANC_BIT_TIME_US (104)
-#define LANC_STARTBIT_TIME_US (LANC_BIT_TIME_US)
 #define LANC_HALF_BIT_TIME_US ((LANC_BIT_TIME_US) / 2)
-
+// LANC_BLOCKED_CALL_TIMEOUT_MS ||
+//      This is the function timeout,  in MS.   If this timeout is exceeded the library will disable
+//      itself to allow control back to the calling program.  Calling begin() will start everything again.
+#define LANC_BLOCKED_CALL_TIMEOUT_MS (100)
+bool LANC_FUNCTION_LOCKOUT = false;
 #define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
-#define LANC_VIDEO_CAMERA_NORMAL_COMMAND  0b00011000
-
-#define transmitIdle transmitZero
+#define LANC_VIDEO_CAMERA_NORMAL_COMMAND 0b00011000
+#define LANC_VIDEO_CAMERA_OPS_COMMAND 0b11011000
 
 LancBlocking::LancBlocking(uint8_t inputPin, uint8_t outputPin)
 {
     _inputPin = inputPin;
     _outputPin = outputPin;
+    LANC_FUNCTION_LOCKOUT = false; // As Library is initialized the function lockout begins as disabled.
 
     memset(_transmitReceiveBuffer, 0, sizeof(_transmitReceiveBuffer));
 }
@@ -27,7 +29,9 @@ void LancBlocking::begin()
 {
     pinMode(_inputPin, INPUT);
     pinMode(_outputPin, OUTPUT);
-    transmitIdle();
+    LANC_FUNCTION_LOCKOUT = false; // Clears the lockout (If it was enabled), which allows the calling program to start transmitting again.
+    ClearCommand();
+    transmitZero();
 }
 
 void LancBlocking::setTransmitDataVideoCameraSpecialCommand(uint8_t data)
@@ -41,9 +45,15 @@ void LancBlocking::setTransmitDataVideoCameraNormalCommand(uint8_t data)
     _transmitReceiveBuffer[0] = LANC_VIDEO_CAMERA_NORMAL_COMMAND;
     _transmitReceiveBuffer[1] = data;
 }
+void LancBlocking::setTransmitDataVideoCameraOpsCommand(uint8_t data)
+{
+    _transmitReceiveBuffer[0] = LANC_VIDEO_CAMERA_OPS_COMMAND;
+    _transmitReceiveBuffer[1] = data;
+}
 
 bool LancBlocking::Zoom(int8_t stepSize)
 {
+    ClearCommand();
     if (stepSize == 0)
     {
         // we actually want to stop zooming which effectively means
@@ -66,51 +76,121 @@ bool LancBlocking::Zoom(int8_t stepSize)
 
     return true;
 }
-
+void LancBlocking::RecordToggle()
+{
+    ClearCommand();
+    setTransmitDataVideoCameraNormalCommand(0x33);
+}
 void LancBlocking::PowerDown()
 {
-    setTransmitDataVideoCameraNormalCommand(B01011110);
+    ClearCommand();
+    setTransmitDataVideoCameraNormalCommand(0x5e);
 }
 void LancBlocking::Focus(bool far)
 {
+    ClearCommand();
     setTransmitDataVideoCameraSpecialCommand((far) ? (0x45) : (0x47));
 }
-
+void LancBlocking::Iris(bool moreopen)
+{
+    ClearCommand();
+    setTransmitDataVideoCameraSpecialCommand((moreopen) ? (0x55) : (0x53));
+}
+void LancBlocking::AutoIris()
+{
+    ClearCommand();
+    setTransmitDataVideoCameraSpecialCommand(0xAF);
+}
 void LancBlocking::AutoFocus()
 {
+    ClearCommand();
     setTransmitDataVideoCameraSpecialCommand(0x41);
 }
-
+void LancBlocking::VideoCameraSpecialCommand(uint8_t byte)
+{
+    ClearCommand();
+    setTransmitDataVideoCameraSpecialCommand(byte);
+}
+void LancBlocking::VideoCameraNormalCommand(uint8_t byte)
+{
+    ClearCommand();
+    setTransmitDataVideoCameraNormalCommand(byte);
+}
+void LancBlocking::VideoCameraOpsCommand(uint8_t byte)
+{
+    ClearCommand();
+    setTransmitDataVideoCameraOpsCommand(byte);
+}
 void LancBlocking::ClearCommand()
 {
+    // Clear the buffers
     _transmitReceiveBuffer[0] = 0;
     _transmitReceiveBuffer[1] = 0;
 }
 
-void LancBlocking::loop()
+bool LancBlocking::loop()
 {
-    auto startTime = syncTransmission();
+    // If the lockout variable is set then exit out of the loop with false (So the calling program can take action)
+    if (LANC_FUNCTION_LOCKOUT)
+    {
+        return false;
+    }
 
-    transmitByte(_transmitReceiveBuffer[0], startTime);
-    startTime = waitNextStart();
-    transmitByte(_transmitReceiveBuffer[1], startTime);
-    startTime = waitNextStart();
-    transmitByte(_transmitReceiveBuffer[2], startTime);
-    startTime = waitNextStart();
-    transmitByte(_transmitReceiveBuffer[3], startTime);
-    startTime = waitNextStart();
-    receiveByte(&_transmitReceiveBuffer[4], startTime);
-    startTime = waitNextStart();
-    receiveByte(&_transmitReceiveBuffer[5], startTime);
-    startTime = waitNextStart();
-    receiveByte(&_transmitReceiveBuffer[6], startTime);
-    startTime = waitNextStart();
-    receiveByte(&_transmitReceiveBuffer[7], startTime);
+    // If the syncTrasmission fails we likely have a hardware failure.  The lockout will be set, return false to
+    //  pass control back to calling program, preventing full software blocking.
+    auto startTime = syncTransmission();
+    if (!startTime)
+    {
+        return false;
+    }
+
+    // Start transmitting and receving data, any failures will result in lockout variable being set and returning false.
+    if (!transmitByte(_transmitReceiveBuffer[0], startTime))
+    {
+        return false;
+    };
+    startTime = waitForStartBit();
+    if (!transmitByte(_transmitReceiveBuffer[1], startTime))
+    {
+        return false;
+    };
+    startTime = waitForStartBit();
+    if (!receiveByte(&_transmitReceiveBuffer[2], startTime))
+    {
+        return false;
+    };
+    startTime = waitForStartBit();
+    if (!receiveByte(&_transmitReceiveBuffer[3], startTime))
+    {
+        return false;
+    };
+    startTime = waitForStartBit();
+    if (!receiveByte(&_transmitReceiveBuffer[4], startTime))
+    {
+        return false;
+    };
+    startTime = waitForStartBit();
+    if (!receiveByte(&_transmitReceiveBuffer[5], startTime))
+    {
+        return false;
+    };
+    startTime = waitForStartBit();
+    if (!receiveByte(&_transmitReceiveBuffer[6], startTime))
+    {
+        return false;
+    };
+    startTime = waitForStartBit();
+    if (!receiveByte(&_transmitReceiveBuffer[7], startTime))
+    {
+        return false;
+    };
+
+    return true; // loop completed without issue,  return true.
 }
 
-void LancBlocking::transmitByte(uint8_t byte, unsigned long startTime)
+bool LancBlocking::transmitByte(uint8_t byte, unsigned long startTime)
 {
-    waitStartBitComplete(startTime);
+    transmitZero();
     for (uint8_t i = 0; i < 8; i++)
     {
         if (byte & (1 << i))
@@ -121,35 +201,44 @@ void LancBlocking::transmitByte(uint8_t byte, unsigned long startTime)
         {
             transmitZero();
         }
-        delayUsWithStartTime(startTime, (i + 1) * LANC_BIT_TIME_US + LANC_STARTBIT_TIME_US); // Wait for the bit to be transmitted
+        delayUsWithStartTime(startTime, (i + 1) * LANC_BIT_TIME_US); // Wait for the bit to be transmitted
     }
+
+    // Check if the total time to send the data is within tollerance.  If not set lockout and return false.
+    //  This should not really ever occur unless microcontroller is running to slow.
+    unsigned long ttime = micros() - startTime;
+    if (ttime >= ((8 * LANC_BIT_TIME_US) + LANC_HALF_BIT_TIME_US))
+    {
+        LANC_FUNCTION_LOCKOUT = true;
+        ClearCommand();
+        return false;
+    }
+
+    transmitZero(); // Complete transmission
+    return true;
 }
-void LancBlocking::receiveByte(uint8_t *byte, unsigned long startTime)
+bool LancBlocking::receiveByte(uint8_t *byte, unsigned long startTime)
 {
     *byte = 0;
-    waitStartBitComplete(startTime);
     for (uint8_t i = 0; i < 8; i++)
     {
-        delayUsWithStartTime(startTime, i * LANC_BIT_TIME_US + LANC_HALF_BIT_TIME_US + LANC_STARTBIT_TIME_US);
         if (inputState())
         {
             *byte |= 1 << i;
         }
-        delayUsWithStartTime(startTime, (i + 1) * LANC_BIT_TIME_US + LANC_STARTBIT_TIME_US);
+        delayUsWithStartTime(startTime, (i + 1) * LANC_BIT_TIME_US);
     }
-}
 
-unsigned long LancBlocking::waitNextStart()
-{
-    transmitIdle();                           // make sure to stop current transmission
-    delayMicroseconds(LANC_HALF_BIT_TIME_US); // Make sure to be in the stop bit before waiting for next byte
-
-    return waitForStartBit();
-}
-
-void LancBlocking::waitStartBitComplete(unsigned long startTime)
-{
-    delayUsWithStartTime(startTime, LANC_STARTBIT_TIME_US);
+    // Check if the total time to receive the data is within tollerance.  If not set lockout and return false.
+    //  This should not really ever occur unless microcontroller is running to slow.
+    unsigned long ttime = micros() - startTime;
+    if (ttime >= ((8 * LANC_BIT_TIME_US) + LANC_HALF_BIT_TIME_US))
+    {
+        LANC_FUNCTION_LOCKOUT = true;
+        ClearCommand();
+        return false;
+    }
+    return true;
 }
 
 void LancBlocking::transmitOne()
@@ -175,17 +264,82 @@ unsigned long LancBlocking::syncTransmission()
     // is still enough to determine between stop conditions during an ongoing transmission and the stop condition
     // between two transmissions.
 
-    // wait for long enough stop condition
-    int stopConditionStart = micros();
-    while ((micros() - stopConditionStart) < 3000)
+    bool bool_wait_for_start_bit = true;
+    unsigned long pulse_transition_duration = 0;
+    unsigned long high_startTime = micros();
+    unsigned long low_startTime = micros();
+    unsigned long block_startTime = millis();
+    unsigned long syncTransmission_startTime = millis(); // Set the time that this function was called to know if we exceed the total allowed time for this function to complete.
+    bool pin_status = HIGH;                              // A default state,  will be overwrote before used.
+    while (bool_wait_for_start_bit)
     {
-        if (!inputState())
+        // Wait for input to move from HIGH to LOW
+        // ***************
+        if (syncTransmission_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
         {
-            stopConditionStart = micros();
+            syncTransmission_startTime = millis();
+        } // Account for clock rollover
+        block_startTime = millis();
+        pin_status = inputState();
+        high_startTime = micros();
+        while (pin_status)
+        {
+            if (block_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
+            {
+                block_startTime = millis();
+            } // Account for clock rollover
+            if (millis() - block_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
+            {
+                LANC_FUNCTION_LOCKOUT = true;
+                ClearCommand();
+                return false;
+                // Time to disable the blocking until external issue is resolved.
+            }
+            pin_status = inputState();
+        }
+        // ***************
+
+        // Wait for input to move from LOW to HIGH
+        // ***************
+        block_startTime = millis();
+        low_startTime = micros();
+        while (!pin_status)
+        {
+            if (block_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
+            {
+                block_startTime = millis();
+            } // Account for clock rollover
+            if (millis() - block_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
+            {
+                LANC_FUNCTION_LOCKOUT = true;
+                ClearCommand();
+                return false;
+                // Time to disable the blocking until external issue is resolved.
+            }
+            pin_status = inputState();
+        }
+        // ***************
+
+        // Evaluate if we have exceeded the total allowed time for this sync to run.  If exceeded lockout and return false.
+        long elapsed = millis() - syncTransmission_startTime;
+        if (elapsed >= (LANC_BLOCKED_CALL_TIMEOUT_MS))
+        {
+            LANC_FUNCTION_LOCKOUT = true;
+            ClearCommand();
+            return false;
+            // Time to disable the blocking until external issue is resolved.
+        }
+
+        // Evaluate if the transition state duration suggests we are at the end of the first start bit,
+        //  This indicates to us we are ready to begin transmitting data.  If so return the current time in microseconds.
+        pulse_transition_duration = low_startTime - high_startTime;
+        if (pulse_transition_duration > 3000)
+        {
+            bool_wait_for_start_bit = false;
+            return micros();
         }
     }
-
-    return waitForStartBit();
+    return micros();
 }
 
 void LancBlocking::delayUsWithStartTime(unsigned long startTime, unsigned long waitTime)
@@ -199,9 +353,45 @@ void LancBlocking::delayUsWithStartTime(unsigned long startTime, unsigned long w
 unsigned long LancBlocking::waitForStartBit()
 {
     unsigned long startTime = micros();
-    while (inputState())
+    unsigned long high_startTime = micros();
+    unsigned long low_startTime = micros();
+    unsigned long block_startTime = millis();
+    bool pin_status = HIGH;
+    block_startTime = millis();
+    pin_status = inputState();
+    high_startTime = micros();
+    while (pin_status)
     {
-        startTime = micros();
+        if (block_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
+        {
+            block_startTime = millis();
+        } // Account for clock rollover
+        if (millis() - block_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
+        {
+            LANC_FUNCTION_LOCKOUT = true;
+            ClearCommand();
+            return false;
+            // Time to disable the blocking until external issue is resolved.
+        }
+        pin_status = inputState();
     }
+    block_startTime = millis();
+    low_startTime = micros();
+    while (!pin_status)
+    {
+        if (block_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
+        {
+            block_startTime = millis();
+        } // Account for clock rollover
+        if (millis() - block_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
+        {
+            LANC_FUNCTION_LOCKOUT = true;
+            ClearCommand();
+            return false;
+            // Time to disable the blocking until external issue is resolved.
+        }
+        pin_status = inputState();
+    }
+    startTime = micros();
     return startTime;
 }
