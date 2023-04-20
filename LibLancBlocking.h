@@ -44,21 +44,41 @@ public:
    * Change the manual focus
    * @param far Whether to pusht the Focus farther away or closer
    */
-  void Iris(bool moreopen);
   void Focus(bool far);
+
+  void RecordToggle();
   /**
-   * Toggle Autofocus
+   * Autofocus
    *
    * @note Maybe we could read whether the Autofocus is set by the return value
    *       and thus change according to the response.
    */
-  void RecordToggle();
   void AutoFocus();
+  /**
+   *  AutoIris
+   *
+   * @note This command is untested,  its the proper code to trigger the iris,
+   *       but the camera I had on hand did not support it.
+   */
   void AutoIris();
   /**
-   * Set the next lanc transmission to no command
+   *  Iris
+   *
+   * @note This command is untested,  its the proper code to trigger the open/close
+   *       but the camera I had on hand did not support it.
+   */
+  void Iris(bool moreopen);
+  /**
+   *  ClearCommand
+   *
+   * @note Set the next lanc transmission to no command
    */
   void ClearCommand();
+  /**
+   *  PowerDown
+   *
+   * @note Instruct the camera to power down.  lanc communications will likley stop on the cameras part after this command completes.
+   */
   void PowerDown();
   void VideoCameraSpecialCommand(uint8_t data);
   void VideoCameraNormalCommand(uint8_t data);
