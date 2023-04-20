@@ -7,7 +7,7 @@
 #endif
 #define LANC_BIT_TIME_US (104)
 #define LANC_HALF_BIT_TIME_US ((LANC_BIT_TIME_US) / 2)
-// LANC_BLOCKED_CALL_TIMEOUT_MS ||
+// LANC_BLOCKED_CALL_TIMEOUT_MS
 //      This is the function timeout,  in MS.   If this timeout is exceeded the library will disable
 //      itself to allow control back to the calling program.  Calling begin() will start everything again.
 #define LANC_BLOCKED_CALL_TIMEOUT_MS (100)
@@ -256,21 +256,20 @@ bool LancBlocking::inputState()
     return digitalRead(_inputPin);
 }
 
+// Sync to next LANC message
+// lanc protocol requires a stop condition that is longer than 5 milliseconds. Since we expect this function
+// to be called periodically and thus have a delay between completion and next start we use a lower value that
+// is still enough to determine between stop conditions during an ongoing transmission and the stop condition
+// between two transmissions.
 unsigned long LancBlocking::syncTransmission()
 {
-    // Sync to next LANC message
-    // lanc protocol requires a stop condition that is longer than 5 milliseconds. Since we expect this function
-    // to be called periodically and thus have a delay between completion and next start we use a lower value that
-    // is still enough to determine between stop conditions during an ongoing transmission and the stop condition
-    // between two transmissions.
-
-    bool bool_wait_for_start_bit = true;
-    unsigned long pulse_transition_duration = 0;
-    unsigned long high_startTime = micros();
-    unsigned long low_startTime = micros();
-    unsigned long block_startTime = millis();
-    unsigned long syncTransmission_startTime = millis(); // Set the time that this function was called to know if we exceed the total allowed time for this function to complete.
-    bool pin_status = HIGH;                              // A default state,  will be overwrote before used.
+    bool bool_wait_for_start_bit = true;                   // Once the bool is set false the function believes we have located the end of the first start bit and we are ready to transmit commands.  The current time (us) is retured from the function.
+    unsigned long pulse_transition_duration = 0;           //  The variable will be used to hold the total time (us) from when the input pin moves from high to low and high again to evaluate if we are at the end of the first start bit or in the middle of a transaction
+    unsigned long wait_high_startTime = micros();          // set the start time (us) to monitor the input pin transition from high to low
+    unsigned long wait_low_startTime = micros();           // set the start time (us) to monitor the input pin transition from low to high
+    unsigned long lockout_evaluation_startTime = millis(); // Set the start time (ms) that the smaller block of code was started, used to evaluate if we exceed the max value and are stuck in a loop while waiting for pin states to go from high to low and low to high.
+    unsigned long syncTransmission_startTime = millis();   // Set the start time (ms) that the syncTransmission function was called to know if we exceed the total allowed time for the function to complete.
+    bool pin_status = HIGH;                                // A default state,  will be overwrote before used.
     while (bool_wait_for_start_bit)
     {
         // Wait for input to move from HIGH to LOW
@@ -278,17 +277,17 @@ unsigned long LancBlocking::syncTransmission()
         if (syncTransmission_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
         {
             syncTransmission_startTime = millis();
-        } // Account for clock rollover
-        block_startTime = millis();
+        } // Account for internal clock rollover
+        lockout_evaluation_startTime = millis();
         pin_status = inputState();
-        high_startTime = micros();
+        wait_high_startTime = micros();
         while (pin_status)
         {
-            if (block_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
+            if (lockout_evaluation_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
             {
-                block_startTime = millis();
+                lockout_evaluation_startTime = millis();
             } // Account for clock rollover
-            if (millis() - block_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
+            if (millis() - lockout_evaluation_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
             {
                 LANC_FUNCTION_LOCKOUT = true;
                 ClearCommand();
@@ -301,15 +300,15 @@ unsigned long LancBlocking::syncTransmission()
 
         // Wait for input to move from LOW to HIGH
         // ***************
-        block_startTime = millis();
-        low_startTime = micros();
+        lockout_evaluation_startTime = millis();
+        wait_low_startTime = micros();
         while (!pin_status)
         {
-            if (block_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
+            if (lockout_evaluation_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
             {
-                block_startTime = millis();
-            } // Account for clock rollover
-            if (millis() - block_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
+                lockout_evaluation_startTime = millis();
+            } // Account for internal clock rollover
+            if (millis() - lockout_evaluation_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
             {
                 LANC_FUNCTION_LOCKOUT = true;
                 ClearCommand();
@@ -332,7 +331,7 @@ unsigned long LancBlocking::syncTransmission()
 
         // Evaluate if the transition state duration suggests we are at the end of the first start bit,
         //  This indicates to us we are ready to begin transmitting data.  If so return the current time in microseconds.
-        pulse_transition_duration = low_startTime - high_startTime;
+        pulse_transition_duration = wait_low_startTime - wait_high_startTime;
         if (pulse_transition_duration > 3000)
         {
             bool_wait_for_start_bit = false;
@@ -350,23 +349,20 @@ void LancBlocking::delayUsWithStartTime(unsigned long startTime, unsigned long w
     }
 }
 
+// This function simply waits for the next high->low->high transition,  its assumed you are calling this during the stop bits of the transaction.  No timing check outside of global lockout is evaulated.  Returns current time (us) once function passed
 unsigned long LancBlocking::waitForStartBit()
 {
-    unsigned long startTime = micros();
-    unsigned long high_startTime = micros();
-    unsigned long low_startTime = micros();
-    unsigned long block_startTime = millis();
+    unsigned long lockout_evaluation_startTime = millis();
     bool pin_status = HIGH;
-    block_startTime = millis();
+    lockout_evaluation_startTime = millis();
     pin_status = inputState();
-    high_startTime = micros();
     while (pin_status)
     {
-        if (block_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
+        if (lockout_evaluation_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
         {
-            block_startTime = millis();
-        } // Account for clock rollover
-        if (millis() - block_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
+            lockout_evaluation_startTime = millis();
+        } // Account for internal clock rollover
+        if (millis() - lockout_evaluation_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
         {
             LANC_FUNCTION_LOCKOUT = true;
             ClearCommand();
@@ -375,15 +371,14 @@ unsigned long LancBlocking::waitForStartBit()
         }
         pin_status = inputState();
     }
-    block_startTime = millis();
-    low_startTime = micros();
+    lockout_evaluation_startTime = millis();
     while (!pin_status)
     {
-        if (block_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
+        if (lockout_evaluation_startTime - LANC_BLOCKED_CALL_TIMEOUT_MS < 0)
         {
-            block_startTime = millis();
-        } // Account for clock rollover
-        if (millis() - block_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
+            lockout_evaluation_startTime = millis();
+        } // Account for internal clock rollover
+        if (millis() - lockout_evaluation_startTime >= LANC_BLOCKED_CALL_TIMEOUT_MS)
         {
             LANC_FUNCTION_LOCKOUT = true;
             ClearCommand();
@@ -392,6 +387,5 @@ unsigned long LancBlocking::waitForStartBit()
         }
         pin_status = inputState();
     }
-    startTime = micros();
-    return startTime;
+    return micros();
 }

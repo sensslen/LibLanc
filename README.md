@@ -24,7 +24,10 @@ void setup() {
 void loop() {
     // get next command to execute
     // call lanc.Zoom(value);
-    lanc.loop();
+    if(!lanc.loop()){
+        // Run the lanc.loop(),  if the loop fails to run a false state is returned and the lanc library stops working until the lanc.begin(); is called again
+        // reasons for failure might be that the camera was turned off, or cable is disconnected.   The library has a default blocking timeout is 100ms. 
+    }
 }
 ```
 
