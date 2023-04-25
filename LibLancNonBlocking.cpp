@@ -76,7 +76,7 @@ void LancNonBlocking::AutoFocus()
 
 void LancNonBlocking::PowerDown()
 {
-    setTransmitDataVideoCameraNormalCommand(B01011110);
+    setTransmitDataVideoCameraNormalCommand(0b01011110);
 }
 
 void LancNonBlocking::ClearCommand()
