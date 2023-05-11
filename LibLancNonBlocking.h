@@ -53,6 +53,7 @@ public:
    * Set the next lanc transmission to no command
    */
   void ClearCommand();
+  void PowerDown();
 
 private:
   /**
@@ -61,6 +62,7 @@ private:
    *             to the camera
    */
   void setTransmitDataVideoCameraSpecialCommand(uint8_t data);
+  void setTransmitDataVideoCameraNormalCommand(uint8_t data);
 
   void writeOne();
   void writeZero();
