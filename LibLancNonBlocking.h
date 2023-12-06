@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 
-class LancNonBlocking
-{
+class LancNonBlocking {
 public:
   /**
    * Setup the lanc instance by assigning Pins to be used.
@@ -69,8 +68,8 @@ private:
   void swapBuffersIfPending();
 
   uint8_t transmitBuffers[2][8];
-  uint8_t * currentTransmission;
-  uint8_t * nextTransmission;
+  uint8_t *currentTransmission;
+  uint8_t *nextTransmission;
   int timeStore;
   bool bufferSwapPending;
   uint8_t currentBit;
@@ -105,4 +104,4 @@ private:
   bool ReceiveNextBit();
 };
 
-#endif // LibLanc_NonBlocking_h
+#endif  // LibLanc_NonBlocking_h
