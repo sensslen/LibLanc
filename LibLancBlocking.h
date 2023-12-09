@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 
-class LancBlocking
-{
+class LancBlocking {
 public:
   /**
    * Setup the lanc instance by assigning Pins to be used.
@@ -91,4 +90,4 @@ private:
   uint8_t _outputPin;
 };
 
-#endif // LibLanc_Blocking_h
+#endif  // LibLanc_Blocking_h
