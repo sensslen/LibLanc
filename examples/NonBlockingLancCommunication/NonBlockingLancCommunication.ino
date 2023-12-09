@@ -30,19 +30,14 @@ void loop() {
 }
 
 void checkCommand() {
-  bool commandComplete = false;
   while (Serial.available() > 0) {
     char read = Serial.read();
     if (read == '\n') {
-      commandComplete = true;
+      lanc.Zoom(receivedCommand.toInt());
+      receivedCommand = "";
       break;
     } else {
-      receivedCommand += (char)Serial.read();
+      receivedCommand += read;
     }
-  }
-
-  if (commandComplete) {
-    lanc.Zoom(receivedCommand.toInt());
-    receivedCommand = "";
   }
 }
