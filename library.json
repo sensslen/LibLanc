@@ -7,6 +7,6 @@
     "url": "https://github.com/sensslen/LibLanc.git"
   },
   "frameworks": "arduino",
-  "platforms": ["atmelavr", "teensy"],
+  "platforms": ["atmelavr", "teensy", "espressif32"],
   "dependencies": []
 }
