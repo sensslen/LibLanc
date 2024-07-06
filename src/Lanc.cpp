@@ -33,9 +33,9 @@ bool Lanc::setCommand(std::shared_ptr<ILancCommand> command)
     return true;
 }
 
-void LancBlocking::switchToNextCommand()
+void Lanc::switchToNextCommand()
 {
-    switch (_activeCommand->GetState())
+    switch (_activeCommand->getState())
     {
         case ILancCommand::LancCommandState::Complete:
             if (_nextCommand)

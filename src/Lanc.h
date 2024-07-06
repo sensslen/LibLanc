@@ -60,6 +60,12 @@ class Lanc
     void putZero();
 
     /**
+     * @brief Helper method to make sure the bus is idle
+     *
+     */
+    void putIdle();
+
+    /**
      * @brief Hepler method to read the current state of the bus
      *
      * @return true The bus currently reads as one
@@ -72,9 +78,6 @@ class Lanc
 
     uint8_t _inputPin;
     uint8_t _outputPin;
-
-  private:
-    void putIdle();
 };
 
 }  // namespace LibLanc

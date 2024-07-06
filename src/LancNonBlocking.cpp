@@ -12,15 +12,13 @@
 
 #define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
 
-LancNonBlocking::LancNonBlocking(uint8_t inputPin, uint8_t outputPin)
-    : _transmitBuffer{ 0, 0, 0, 0 }, _receiveBuffer{ 0, 0, 0, 0 }
+namespace LibLanc
 {
-    _inputPin = inputPin;
-    _outputPin = outputPin;
 
-    _activeCommand = make_shared<Commands::EmptyCommand>();
-
-    currentState = &LancNonBlocking::SearchStart;
+LancNonBlocking::LancNonBlocking(uint8_t inputPin, uint8_t outputPin)
+    : Lanc(inputPin, outputPin), _transmitBuffer{ 0, 0, 0, 0 }, _receiveBuffer{ 0, 0, 0, 0 }
+{
+    currentState = &LancNonBlocking::searchStart;
     timeStore = 0;
 }
 
@@ -77,7 +75,7 @@ void LancNonBlocking::waitToTransmitStopBit()
     // calculate delay from start bit in order to avoid adding up errors
     if (timePassed() >= (8 + 1) * LANC_BIT_TIME_US)
     {
-        writeIdle();
+        putIdle();
         currentState = &LancNonBlocking::waitForNextStartBit;
     }
 }
@@ -154,3 +152,5 @@ bool LancNonBlocking::receiveNextBit()
     currentBit++;
     return bit == 7;
 }
+
+}  // namespace LibLanc

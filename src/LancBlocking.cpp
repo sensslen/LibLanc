@@ -1,5 +1,11 @@
 #include "LancBlocking.h"
 
+#if defined(ARDUINO) && ARDUINO >= 100
+#include "Arduino.h"
+#else
+#include "WProgram.h"
+#endif
+
 #define LANC_BIT_TIME_US (104)
 #define LANC_STARTBIT_TIME_US (LANC_BIT_TIME_US)
 #define LANC_HALF_BIT_TIME_US ((LANC_BIT_TIME_US) / 2)
@@ -72,7 +78,7 @@ uint8_t LancBlocking::receiveByte(unsigned long startTime)
 
 unsigned long LancBlocking::waitNextStart()
 {
-    putZero();                                 // make sure to stop current transmission
+    putIdle();                                 // make sure to stop current transmission
     delayMicroseconds(LANC_HALF_BIT_TIME_US);  // Make sure to be in the stop bit before waiting for next byte
 
     return waitForStartBit();
