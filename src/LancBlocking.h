@@ -5,7 +5,6 @@
 
 #include <memory>
 
-#include "Commands/ILancCommand.h"
 #include "Lanc.h"
 
 namespace LibLanc
