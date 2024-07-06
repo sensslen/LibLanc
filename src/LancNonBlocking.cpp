@@ -1,4 +1,4 @@
-#include "LibLancNonBlocking.h"
+#include "LancNonBlocking.h"
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
