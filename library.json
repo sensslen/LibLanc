@@ -1,0 +1,35 @@
+{
+    "name": "LibLanc",
+    "keywords": "lanc, video, camera",
+    "description": "Allow an Arduino sketch to communicate with a video camera that supports the lanc protocol",
+    "homepage": "https://github.com/sensslen/LibLanc",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/sensslen/LibLanc.git"
+    },
+    "frameworks": "arduino",
+    "platforms": [
+        "atmelavr",
+        "teensy",
+        "espressif32"
+    ],
+    "dependencies": [],
+    "authors": [
+        {
+            "name": "Simon Ensslen",
+            "maintainer": true
+        }
+    ],
+    "license": "MIT",
+    "export": {
+        "include": [
+            "examples",
+            "src",
+            "library.json",
+            "library.properties",
+            "LICENSE",
+            "README.md"
+        ]
+    },
+    "version": "2.0.4"
+}
