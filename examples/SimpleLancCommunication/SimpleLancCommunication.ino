@@ -9,7 +9,7 @@
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-LancBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN);
+LibLanc::LancBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN);
 
 void setup()
 {
@@ -19,6 +19,6 @@ void setup()
 void loop()
 {
     // get next command to execute
-    // call lanc.setCommand(std::make_shared<LibLanc::Commands::ZoomCommand>(3));
+    // call lanc.setCommand(LibLanc::CommandFactory::zoom(3));
     lanc.loop();
 }

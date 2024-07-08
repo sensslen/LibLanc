@@ -1,5 +1,5 @@
-#include <Commands/ZoomCommand.h>
 #include <LibLanc.h>
+#include <WString.h>
 
 #include <memory>
 
@@ -9,7 +9,7 @@
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-LancNonBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN);
+LibLanc::LancNonBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN);
 String receivedCommand = "";
 
 void setup()
@@ -42,7 +42,7 @@ void checkCommand()
         char read = Serial.read();
         if (read == '\n')
         {
-            lanc.setCommand(std::make_shared<LibLanc::Commands::ZoomCommand>(receivedCommand.toInt()));
+            lanc.setCommand(LibLanc::CommandFactory::zoom(receivedCommand.toInt()));
             receivedCommand = "";
             break;
         }
