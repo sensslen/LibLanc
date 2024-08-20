@@ -19,7 +19,7 @@ class LancNonBlocking : public Lanc
      * @param inputPin  The pin tu use to read LANC signals
      * @param outputPin The Pin to use to send LANC signals
      */
-    LancNonBlocking(uint8_t inputPin, uint8_t outputPin);
+    LancNonBlocking(uint8_t inputPin, uint8_t outputPin, bool isInverted);
 
     /**
      * This function must be called as quickly as possible in order to not loose

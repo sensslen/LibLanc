@@ -9,7 +9,7 @@
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-LibLanc::LancBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN);
+LibLanc::LancBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false);
 
 void setup()
 {

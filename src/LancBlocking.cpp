@@ -13,7 +13,9 @@
 namespace LibLanc
 {
 
-LancBlocking::LancBlocking(uint8_t inputPin, uint8_t outputPin) : Lanc(inputPin, outputPin) {}
+LancBlocking::LancBlocking(uint8_t inputPin, uint8_t outputPin, bool isInverted) : Lanc(inputPin, outputPin, isInverted)
+{
+}
 
 void LancBlocking::loop()
 {

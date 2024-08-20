@@ -38,7 +38,7 @@ class Lanc
      * @param inputPin  The pin tu use to read LANC signals
      * @param outputPin The Pin to use to send LANC signals
      */
-    Lanc(uint8_t inputPin, uint8_t outputPin);
+    Lanc(uint8_t inputPin, uint8_t outputPin, bool isInverted);
 
     /**
      * @brief switch to the next command to be used depending on the state of the current command and whether there is a
@@ -78,6 +78,8 @@ class Lanc
 
     uint8_t _inputPin;
     uint8_t _outputPin;
+    uint8_t _lowValue;
+    uint8_t _highValue;
 };
 
 }  // namespace LibLanc

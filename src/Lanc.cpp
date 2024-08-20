@@ -14,10 +14,12 @@
 namespace LibLanc
 {
 
-Lanc::Lanc(uint8_t inputPin, uint8_t outputPin)
+Lanc::Lanc(uint8_t inputPin, uint8_t outputPin, bool isInverted)
 {
     _inputPin = inputPin;
     _outputPin = outputPin;
+    _lowValue = isInverted ? LOW : HIGH;
+    _highValue = isInverted ? HIGH : LOW;
 
     _activeCommand = std::make_shared<Commands::EmptyCommand>();
 }
@@ -68,7 +70,7 @@ void Lanc::begin()
 
 void Lanc::putOne()
 {
-    digitalWrite(_outputPin, HIGH);
+    digitalWrite(_outputPin, _highValue);
 }
 
 void Lanc::putIdle()
@@ -78,12 +80,12 @@ void Lanc::putIdle()
 
 void Lanc::putZero()
 {
-    digitalWrite(_outputPin, LOW);
+    digitalWrite(_outputPin, _lowValue);
 }
 
 bool Lanc::readState()
 {
-    return digitalRead(_inputPin);
+    return digitalRead(_inputPin) == _highValue;
 }
 
 }  // namespace LibLanc
