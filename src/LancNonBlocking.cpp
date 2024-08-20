@@ -15,8 +15,8 @@
 namespace LibLanc
 {
 
-LancNonBlocking::LancNonBlocking(uint8_t inputPin, uint8_t outputPin)
-    : Lanc(inputPin, outputPin), _transmitBuffer{ 0, 0, 0, 0 }, _receiveBuffer{ 0, 0, 0, 0 }
+LancNonBlocking::LancNonBlocking(uint8_t inputPin, uint8_t outputPin, bool isInverted)
+    : Lanc(inputPin, outputPin, isInverted), _transmitBuffer{ 0, 0, 0, 0 }, _receiveBuffer{ 0, 0, 0, 0 }
 {
     currentState = &LancNonBlocking::searchStart;
     timeStore = 0;
