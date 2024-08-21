@@ -13,6 +13,7 @@ class TwoPinPhysicalLayer : public PhysicalLayer
   public:
     TwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, bool isInverted);
     virtual void begin() override;
+    virtual void putIdle() override;
 
   protected:
     virtual bool readPinState() override;

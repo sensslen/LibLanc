@@ -35,11 +35,6 @@ void PhysicalLayer::putZero()
     writePinState(_lowValue);
 }
 
-void PhysicalLayer::putIdle()
-{
-    putZero();
-}
-
 bool PhysicalLayer::readState()
 {
     return readPinState() == _highValue;

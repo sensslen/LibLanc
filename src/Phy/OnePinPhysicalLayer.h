@@ -13,6 +13,7 @@ class OnePinPhysicalLayer : public PhysicalLayer
   public:
     OnePinPhysicalLayer(uint8_t pin, bool isInverted);
     virtual void begin() override;
+    virtual void putIdle() override;
 
   protected:
     virtual bool readPinState() override;

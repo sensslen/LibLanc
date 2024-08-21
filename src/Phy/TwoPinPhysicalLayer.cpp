@@ -32,5 +32,10 @@ void TwoPinPhysicalLayer::writePinState(const bool state)
     digitalWrite(_outputPin, state);
 }
 
+void TwoPinPhysicalLayer::putIdle()
+{
+    putZero();
+}
+
 }  // namespace Phy
 }  // namespace LibLanc

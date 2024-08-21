@@ -29,7 +29,7 @@ class PhysicalLayer
      * @brief Make sure the bus is idle
      *
      */
-    void putIdle();
+    virtual void putIdle() = 0;
 
     /**
      * @brief Read the current state of the bus

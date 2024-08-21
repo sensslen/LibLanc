@@ -30,5 +30,10 @@ void OnePinPhysicalLayer::writePinState(const bool state)
     digitalWrite(_pin, state);
 }
 
+void OnePinPhysicalLayer::putIdle()
+{
+    pinMode(_pin, INPUT);
+}
+
 }  // namespace Phy
 }  // namespace LibLanc
