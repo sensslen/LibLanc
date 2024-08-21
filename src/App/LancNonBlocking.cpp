@@ -16,7 +16,7 @@ LancNonBlocking::LancNonBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLay
     , _transmitBuffer{ 0, 0, 0, 0 }
     , _receiveBuffer{ 0, 0, 0, 0 }
     , _timeStore(0)
-    , _currentBit(0)
+    , __currentBit(0)
     , _currentState(&LancNonBlocking::searchStart)
 {
 }
@@ -49,7 +49,7 @@ void LancNonBlocking::waitForTransmissionStart()
 {
     if (!_physicalLayer->readState())
     {
-        currentBit = 0;
+        _currentBit = 0;
         _timeStore = micros();
         _currentState = &LancNonBlocking::waitToTransmitNextBit;
     }
@@ -57,7 +57,7 @@ void LancNonBlocking::waitForTransmissionStart()
 
 void LancNonBlocking::waitToTransmitNextBit()
 {
-    uint8_t bitNr = currentBit % 8;
+    uint8_t bitNr = _currentBit % 8;
 
     // calculate delay from start bit in order to avoid adding up errors
     if (timePassed() >= (bitNr + 1) * LANC_BIT_TIME_US)
@@ -86,7 +86,7 @@ void LancNonBlocking::waitForNextStartBit()
     if ((timePassed() > (LANC_COMPLETE_BYTE_TIME - LANC_HALF_BIT_TIME_US)) && !_physicalLayer->readState())
     {
         _timeStore = micros();
-        if (currentBit >= (2 * 8))
+        if (_currentBit >= (2 * 8))
         {
             _currentState = &LancNonBlocking::waitToReceiveNextBit;
         }
@@ -99,14 +99,14 @@ void LancNonBlocking::waitForNextStartBit()
 
 void LancNonBlocking::waitToReceiveNextBit()
 {
-    uint8_t bitNr = currentBit % 8;
+    uint8_t bitNr = _currentBit % 8;
 
     // calculate delay from start bit in order to avoid adding up errors
     if (timePassed() >= (((bitNr + 1) * LANC_BIT_TIME_US) + LANC_HALF_BIT_TIME_US))
     {
         if (receiveNextBit())
         {
-            if (currentBit >= 8 * 8)
+            if (_currentBit >= 8 * 8)
             {
                 _activeCommand->bytesReceived(_receiveBuffer);
                 switchToNextCommand();
@@ -122,8 +122,8 @@ void LancNonBlocking::waitToReceiveNextBit()
 
 bool LancNonBlocking::transmitNextBit()
 {
-    uint8_t byte = currentBit / 8;
-    uint8_t bit = currentBit % 8;
+    uint8_t byte = _currentBit / 8;
+    uint8_t bit = _currentBit % 8;
 
     if (_transmitBuffer[byte] & (1 << bit))
     {
@@ -134,21 +134,21 @@ bool LancNonBlocking::transmitNextBit()
         _physicalLayer->putZero();
     }
 
-    currentBit++;
+    _currentBit++;
     return bit == 7;
 }
 
 bool LancNonBlocking::receiveNextBit()
 {
-    uint8_t byte = currentBit / 8;
-    uint8_t bit = currentBit % 8;
+    uint8_t byte = _currentBit / 8;
+    uint8_t bit = _currentBit % 8;
 
     if (_physicalLayer->readState())
     {
         _receiveBuffer[byte - 4] |= 1 << bit;
     }
 
-    currentBit++;
+    _currentBit++;
     return bit == 7;
 }
 

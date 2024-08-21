@@ -56,8 +56,9 @@ class Lanc
     const uint8_t LANC_BIT_TIME_US = 104;
     const uint8_t LANC_HALF_BIT_TIME_US = (LANC_BIT_TIME_US) / 2;
 
-  private:
     std::shared_ptr<ILancCommand> _activeCommand;
+
+  private:
     std::shared_ptr<ILancCommand> _nextCommand;
 };
 
