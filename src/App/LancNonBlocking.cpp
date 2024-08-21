@@ -12,7 +12,7 @@ namespace App
 {
 
 LancNonBlocking::LancNonBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLayer)
-    : Lanc(physicalLayer)
+    : Lanc(std::move(physicalLayer))
     , _transmitBuffer{ 0, 0, 0, 0 }
     , _receiveBuffer{ 0, 0, 0, 0 }
     , _timeStore(0)
