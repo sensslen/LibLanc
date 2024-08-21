@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "../Phy/PhysicalLayer.h"
+#include "../Phy/IPhysicalLayer.h"
 #include "ILancCommand.h"
 
 #ifndef Lanc_h
@@ -42,7 +42,7 @@ class Lanc
      * @param inputPin  The pin tu use to read LANC signals
      * @param outputPin The Pin to use to send LANC signals
      */
-    Lanc(std::unique_ptr<Phy::PhysicalLayer> physicalLayer);
+    Lanc(std::unique_ptr<Phy::IPhysicalLayer> physicalLayer);
 
     /**
      * @brief switch to the next command to be used depending on the state of the current command and whether there is a
@@ -51,7 +51,7 @@ class Lanc
      */
     void switchToNextCommand();
 
-    std::unique_ptr<Phy::PhysicalLayer> _physicalLayer;
+    std::unique_ptr<Phy::IPhysicalLayer> _physicalLayer;
 
     const uint8_t LANC_BIT_TIME_US = 104;
     const uint8_t LANC_HALF_BIT_TIME_US = (LANC_BIT_TIME_US) / 2;

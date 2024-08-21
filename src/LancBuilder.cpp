@@ -13,9 +13,10 @@ void LancBuilder::UseOnePinPhysicalLayer(uint8_t pin, bool isInverted)
     _physicalLayer = std::make_unique<Phy::OnePinPhysicalLayer>(pin, isInverted);
 }
 
-void LancBuilder::UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, bool isInverted)
+void LancBuilder::UseTwoPinPhysicalLayer(
+    uint8_t inputPin, uint8_t outputPin, bool isSendInverted, bool isReceiveInverted)
 {
-    _physicalLayer = std::make_unique<Phy::TwoPinPhysicalLayer>(inputPin, outputPin, isInverted);
+    _physicalLayer = std::make_unique<Phy::TwoPinPhysicalLayer>(inputPin, outputPin, isSendInverted, isReceiveInverted);
 }
 
 std::unique_ptr<App::Lanc> LancBuilder::CreateBlocking()

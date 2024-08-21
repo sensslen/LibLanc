@@ -11,28 +11,33 @@ namespace LibLanc
 namespace Phy
 {
 
-OnePinPhysicalLayer::OnePinPhysicalLayer(uint8_t pin, bool isInverted) : PhysicalLayer(isInverted), _pin(pin) {}
+OnePinPhysicalLayer::OnePinPhysicalLayer(uint8_t pin, bool isInverted) : _pin(pin), _isInverted(isInverted) {}
 
 void OnePinPhysicalLayer::begin()
 {
-    pinMode(_pin, INPUT);
+    putIdle();
 }
 
-bool OnePinPhysicalLayer::readPinState()
-{
-    pinMode(_pin, INPUT);
-    return digitalRead(_pin);
-}
-
-void OnePinPhysicalLayer::writePinState(const bool state)
+void OnePinPhysicalLayer::putOne()
 {
     pinMode(_pin, OUTPUT);
-    digitalWrite(_pin, state);
+    digitalWrite(_pin, _isInverted ? LOW : HIGH);
+}
+
+void OnePinPhysicalLayer::putZero()
+{
+    pinMode(_pin, OUTPUT);
+    digitalWrite(_pin, _isInverted ? HIGH : LOW);
 }
 
 void OnePinPhysicalLayer::putIdle()
 {
     pinMode(_pin, INPUT);
+}
+
+bool OnePinPhysicalLayer::readState()
+{
+    return digitalRead(_pin) == (_isInverted ? HIGH : LOW);
 }
 
 }  // namespace Phy

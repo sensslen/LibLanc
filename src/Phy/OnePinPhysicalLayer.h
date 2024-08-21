@@ -1,4 +1,4 @@
-#include "PhysicalLayer.h"
+#include "IPhysicalLayer.h"
 
 #ifndef OnePinPhysicalLayer_h
 #define OnePinPhysicalLayer_h
@@ -8,19 +8,20 @@ namespace LibLanc
 namespace Phy
 {
 
-class OnePinPhysicalLayer : public PhysicalLayer
+class OnePinPhysicalLayer : public IPhysicalLayer
 {
   public:
     OnePinPhysicalLayer(uint8_t pin, bool isInverted);
-    virtual void begin() override;
-    virtual void putIdle() override;
 
-  protected:
-    virtual bool readPinState() override;
-    virtual void writePinState(const bool state) override;
+    virtual void putOne() override;
+    virtual void putZero() override;
+    virtual void putIdle() override;
+    virtual bool readState() override;
+    virtual void begin() override;
 
   private:
     uint8_t _pin;
+    bool _isInverted;
 };
 }  // namespace Phy
 }  // namespace LibLanc

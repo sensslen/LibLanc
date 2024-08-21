@@ -1,6 +1,7 @@
 #include <memory>
 
-#include "Commands/ZoomCommand.h"
+#include "ILancCommand.h"
+
 #ifndef CommandFactory_h
 #define CommandFactory_h
 

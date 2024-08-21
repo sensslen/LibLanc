@@ -15,7 +15,7 @@ String receivedCommand = "";
 void setup()
 {
     LibLanc::LancBuilder lancBuilder;
-    lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false);
+    lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false, false);
     lanc = lancBuilder.CreateNonBlocking();
 
     lanc.begin();

@@ -58,6 +58,7 @@ void LancBlocking::transmitByte(uint8_t byte, unsigned long startTime)
             startTime, (i + 1) * LANC_BIT_TIME_US + LANC_STARTBIT_TIME_US);  // Wait for the bit to be transmitted
     }
 }
+
 uint8_t LancBlocking::receiveByte(unsigned long startTime)
 {
     uint8_t byte = 0;
