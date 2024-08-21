@@ -1,20 +1,24 @@
-#ifndef Lanc_h
-#define Lanc_h
 
 #include <stdint.h>
 
 #include <memory>
 
+#include "../Phy/PhysicalLayer.h"
 #include "ILancCommand.h"
 
+#ifndef Lanc_h
+#define Lanc_h
+
 namespace LibLanc
+{
+namespace App
 {
 
 class Lanc
 {
   public:
     /**
-     * Setup the Pins
+     * Setup the Lanc instance
      */
     void begin();
     /**
@@ -38,7 +42,7 @@ class Lanc
      * @param inputPin  The pin tu use to read LANC signals
      * @param outputPin The Pin to use to send LANC signals
      */
-    Lanc(uint8_t inputPin, uint8_t outputPin, bool isInverted);
+    Lanc(std::unique_ptr<Phy::PhysicalLayer> physicalLayer);
 
     /**
      * @brief switch to the next command to be used depending on the state of the current command and whether there is a
@@ -47,41 +51,18 @@ class Lanc
      */
     void switchToNextCommand();
 
-    /**
-     * @brief Helper method to put a one value onto the bus
-     *
-     */
-    void putOne();
+    std::unique_ptr<Phy::PhysicalLayer> _physicalLayer;
 
-    /**
-     * @brief Helper method to put a zero value onto the bus
-     *
-     */
-    void putZero();
+    const uint8_t LANC_BIT_TIME_US = 104;
+    const uint8_t LANC_HALF_BIT_TIME_US = (LANC_BIT_TIME_US) / 2;
+    const uint16_t LANC_COMPLETE_BYTE_TIME = (10 * LANC_BIT_TIME_US);
 
-    /**
-     * @brief Helper method to make sure the bus is idle
-     *
-     */
-    void putIdle();
-
-    /**
-     * @brief Hepler method to read the current state of the bus
-     *
-     * @return true The bus currently reads as one
-     * @return false The bus currently reads as zero
-     */
-    bool readState();
-
+  private:
     std::shared_ptr<ILancCommand> _activeCommand;
     std::shared_ptr<ILancCommand> _nextCommand;
-
-    uint8_t _inputPin;
-    uint8_t _outputPin;
-    uint8_t _lowValue;
-    uint8_t _highValue;
 };
 
+}  // namespace App
 }  // namespace LibLanc
 
 #endif  // Lanc_h

@@ -5,23 +5,14 @@
 
 #include "Commands/EmptyCommand.h"
 
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
 namespace LibLanc
 {
-
-Lanc::Lanc(uint8_t inputPin, uint8_t outputPin, bool isInverted)
+namespace App
 {
-    _inputPin = inputPin;
-    _outputPin = outputPin;
-    _lowValue = isInverted ? LOW : HIGH;
-    _highValue = isInverted ? HIGH : LOW;
 
-    _activeCommand = std::make_shared<Commands::EmptyCommand>();
+Lanc::Lanc(std::unique_ptr<Phy::PhysicalLayer> physicalLayer)
+    : _physicalLayer(std::move(physicalLayer)), _activeCommand(std::make_shared<Commands::EmptyCommand>())
+{
 }
 
 bool Lanc::setCommand(std::shared_ptr<ILancCommand> command)
@@ -63,29 +54,8 @@ void Lanc::switchToNextCommand()
 
 void Lanc::begin()
 {
-    pinMode(_inputPin, INPUT);
-    pinMode(_outputPin, OUTPUT);
-    putIdle();
+    _physicalLayer->begin();
 }
 
-void Lanc::putOne()
-{
-    digitalWrite(_outputPin, _highValue);
-}
-
-void Lanc::putIdle()
-{
-    putZero();
-}
-
-void Lanc::putZero()
-{
-    digitalWrite(_outputPin, _lowValue);
-}
-
-bool Lanc::readState()
-{
-    return digitalRead(_inputPin) == _highValue;
-}
-
+}  // namespace App
 }  // namespace LibLanc

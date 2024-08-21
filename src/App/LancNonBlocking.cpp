@@ -6,53 +6,52 @@
 #include "WProgram.h"
 #endif
 
-#define LANC_BIT_TIME_US (104)
-#define LANC_HALF_BIT_TIME_US ((LANC_BIT_TIME_US) / 2)
-#define LANC_COMPLETE_BYTE_TIME (10 * LANC_BIT_TIME_US)
-
-#define LANC_VIDEO_CAMERA_SPECIAL_COMMAND 0b00101000
-
 namespace LibLanc
 {
-
-LancNonBlocking::LancNonBlocking(uint8_t inputPin, uint8_t outputPin, bool isInverted)
-    : Lanc(inputPin, outputPin, isInverted), _transmitBuffer{ 0, 0, 0, 0 }, _receiveBuffer{ 0, 0, 0, 0 }
+namespace App
 {
-    currentState = &LancNonBlocking::searchStart;
-    timeStore = 0;
+
+LancNonBlocking::LancNonBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLayer)
+    : Lanc(physicalLayer)
+    , _transmitBuffer{ 0, 0, 0, 0 }
+    , _receiveBuffer{ 0, 0, 0, 0 }
+    , _timeStore(0)
+    , _currentBit(0)
+    , _currentState(&LancNonBlocking::searchStart)
+{
 }
 
 void LancNonBlocking::loop()
 {
-    (this->*currentState)();
+    (this->*_currentState)();
 }
 
 int LancNonBlocking::timePassed()
 {
-    return (micros() - timeStore);
+    return (micros() - _timeStore);
 }
 
 void LancNonBlocking::searchStart()
 {
     _activeCommand->prepareTransmission(_transmitBuffer);
 
-    if (!readState())
+    if (!_physicalLayer->readState())
     {
-        timeStore = micros();
+        _timeStore = micros();
     }
     if (timePassed() > 3000)
     {
-        currentState = &LancNonBlocking::waitForTransmissionStart;
+        _currentState = &LancNonBlocking::waitForTransmissionStart;
     }
 }
 
 void LancNonBlocking::waitForTransmissionStart()
 {
-    if (!readState())
+    if (!_physicalLayer->readState())
     {
         currentBit = 0;
-        timeStore = micros();
-        currentState = &LancNonBlocking::waitToTransmitNextBit;
+        _timeStore = micros();
+        _currentState = &LancNonBlocking::waitToTransmitNextBit;
     }
 }
 
@@ -65,7 +64,7 @@ void LancNonBlocking::waitToTransmitNextBit()
     {
         if (transmitNextBit())
         {
-            currentState = &LancNonBlocking::waitToTransmitStopBit;
+            _currentState = &LancNonBlocking::waitToTransmitStopBit;
         }
     }
 }
@@ -75,8 +74,8 @@ void LancNonBlocking::waitToTransmitStopBit()
     // calculate delay from start bit in order to avoid adding up errors
     if (timePassed() >= (8 + 1) * LANC_BIT_TIME_US)
     {
-        putIdle();
-        currentState = &LancNonBlocking::waitForNextStartBit;
+        _physicalLayer->putIdle();
+        _currentState = &LancNonBlocking::waitForNextStartBit;
     }
 }
 
@@ -84,16 +83,16 @@ void LancNonBlocking::waitForNextStartBit()
 {
     // make sure to only start searching for the start condition when the stop
     // condition is at least half way through
-    if ((timePassed() > (LANC_COMPLETE_BYTE_TIME - LANC_HALF_BIT_TIME_US)) && !readState())
+    if ((timePassed() > (LANC_COMPLETE_BYTE_TIME - LANC_HALF_BIT_TIME_US)) && !_physicalLayer->readState())
     {
-        timeStore = micros();
+        _timeStore = micros();
         if (currentBit >= (2 * 8))
         {
-            currentState = &LancNonBlocking::waitToReceiveNextBit;
+            _currentState = &LancNonBlocking::waitToReceiveNextBit;
         }
         else
         {
-            currentState = &LancNonBlocking::waitToTransmitNextBit;
+            _currentState = &LancNonBlocking::waitToTransmitNextBit;
         }
     }
 }
@@ -111,11 +110,11 @@ void LancNonBlocking::waitToReceiveNextBit()
             {
                 _activeCommand->bytesReceived(_receiveBuffer);
                 switchToNextCommand();
-                currentState = &LancNonBlocking::searchStart;
+                _currentState = &LancNonBlocking::searchStart;
             }
             else
             {
-                currentState = &LancNonBlocking::waitForNextStartBit;
+                _currentState = &LancNonBlocking::waitForNextStartBit;
             }
         }
     }
@@ -128,11 +127,11 @@ bool LancNonBlocking::transmitNextBit()
 
     if (_transmitBuffer[byte] & (1 << bit))
     {
-        putOne();
+        _physicalLayer->putOne();
     }
     else
     {
-        putZero();
+        _physicalLayer->putZero();
     }
 
     currentBit++;
@@ -144,7 +143,7 @@ bool LancNonBlocking::receiveNextBit()
     uint8_t byte = currentBit / 8;
     uint8_t bit = currentBit % 8;
 
-    if (readState())
+    if (_physicalLayer->readState())
     {
         _receiveBuffer[byte - 4] |= 1 << bit;
     }
@@ -153,4 +152,5 @@ bool LancNonBlocking::receiveNextBit()
     return bit == 7;
 }
 
+}  // namespace App
 }  // namespace LibLanc

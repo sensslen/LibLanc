@@ -9,6 +9,8 @@
 
 namespace LibLanc
 {
+namespace App
+{
 
 class LancBlocking : public Lanc
 {
@@ -51,8 +53,11 @@ class LancBlocking : public Lanc
     unsigned long waitForStartBit();
     void waitStartBitComplete(unsigned long startTime);
     void delayUsWithStartTime(unsigned long startTime, unsigned long waitTime);
+
+    const uint8_t LANC_STARTBIT_TIME_US = LANC_BIT_TIME_US;
 };
 
+}  // namespace App
 }  // namespace LibLanc
 
 #endif  // LibLanc_Blocking_h

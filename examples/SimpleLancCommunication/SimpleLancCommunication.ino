@@ -9,16 +9,19 @@
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-LibLanc::LancBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false);
+std::unique_ptr<LibLanc::App::Lanc> lanc;
 
 void setup()
 {
-    lanc.begin();
+    LibLanc::LancBuilder lancBuilder;
+    lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false);
+    lanc = lancBuilder.CreateBlocking();
+    lanc->begin();
 }
 
 void loop()
 {
     // get next command to execute
     // call lanc.setCommand(LibLanc::CommandFactory::zoom(3));
-    lanc.loop();
+    lanc->loop();
 }

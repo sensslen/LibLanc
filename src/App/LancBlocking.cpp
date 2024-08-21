@@ -6,16 +6,12 @@
 #include "WProgram.h"
 #endif
 
-#define LANC_BIT_TIME_US (104)
-#define LANC_STARTBIT_TIME_US (LANC_BIT_TIME_US)
-#define LANC_HALF_BIT_TIME_US ((LANC_BIT_TIME_US) / 2)
-
 namespace LibLanc
 {
-
-LancBlocking::LancBlocking(uint8_t inputPin, uint8_t outputPin, bool isInverted) : Lanc(inputPin, outputPin, isInverted)
+namespace App
 {
-}
+
+LancBlocking::LancBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLayer) : Lanc(physicalLayer) {}
 
 void LancBlocking::loop()
 {
@@ -52,11 +48,11 @@ void LancBlocking::transmitByte(uint8_t byte, unsigned long startTime)
     {
         if (byte & (1 << i))
         {
-            putOne();
+            _physicalLayer->putOne();
         }
         else
         {
-            putZero();
+            _physicalLayer->putZero();
         }
         delayUsWithStartTime(
             startTime, (i + 1) * LANC_BIT_TIME_US + LANC_STARTBIT_TIME_US);  // Wait for the bit to be transmitted
@@ -69,7 +65,7 @@ uint8_t LancBlocking::receiveByte(unsigned long startTime)
     for (uint8_t i = 0; i < 8; i++)
     {
         delayUsWithStartTime(startTime, i * LANC_BIT_TIME_US + LANC_HALF_BIT_TIME_US + LANC_STARTBIT_TIME_US);
-        if (readState())
+        if (_physicalLayer->readState())
         {
             byte |= 1 << i;
         }
@@ -80,7 +76,7 @@ uint8_t LancBlocking::receiveByte(unsigned long startTime)
 
 unsigned long LancBlocking::waitNextStart()
 {
-    putIdle();                                 // make sure to stop current transmission
+    _physicalLayer->putIdle();                 // make sure to stop current transmission
     delayMicroseconds(LANC_HALF_BIT_TIME_US);  // Make sure to be in the stop bit before waiting for next byte
 
     return waitForStartBit();
@@ -103,7 +99,7 @@ unsigned long LancBlocking::syncTransmission()
     int stopConditionStart = micros();
     while ((micros() - stopConditionStart) < 3000)
     {
-        if (!readState())
+        if (!_physicalLayer->readState())
         {
             stopConditionStart = micros();
         }
@@ -123,11 +119,12 @@ void LancBlocking::delayUsWithStartTime(unsigned long startTime, unsigned long w
 unsigned long LancBlocking::waitForStartBit()
 {
     unsigned long startTime = micros();
-    while (readState())
+    while (_physicalLayer->readState())
     {
         startTime = micros();
     }
     return startTime;
 }
 
+}  // namespace App
 }  // namespace LibLanc
