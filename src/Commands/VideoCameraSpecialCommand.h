@@ -1,7 +1,7 @@
+#include "../ILancCommand.h"
+
 #ifndef VideoCameraSpecialCommand_h
 #define VideoCameraSpecialCommand_h
-
-#include "../ILancCommand.h"
 
 namespace LibLanc
 {

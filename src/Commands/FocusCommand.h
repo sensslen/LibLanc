@@ -1,7 +1,7 @@
+#include "VideoCameraSpecialCommand.h"
+
 #ifndef FocusCommand_h
 #define FocusCommand_h
-
-#include "VideoCameraSpecialCommand.h"
 
 namespace LibLanc
 {

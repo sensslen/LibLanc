@@ -1,7 +1,7 @@
+#include "VideoCameraSpecialCommand.h"
+
 #ifndef AutoFocusCommand_h
 #define AutoFocusCommand_h
-
-#include "VideoCameraSpecialCommand.h"
 
 namespace LibLanc
 {

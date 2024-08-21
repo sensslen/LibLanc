@@ -1,7 +1,7 @@
+#include "../ILancCommand.h"
+
 #ifndef EmptyCommand_h
 #define EmptyCommand_h
-
-#include "../ILancCommand.h"
 
 namespace LibLanc
 {

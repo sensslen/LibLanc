@@ -1,7 +1,7 @@
+#include "VideoCameraSpecialCommand.h"
+
 #ifndef ZoomCommand_h
 #define ZoomCommand_h
-
-#include "VideoCameraSpecialCommand.h"
 
 namespace LibLanc
 {

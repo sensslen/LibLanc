@@ -1,11 +1,11 @@
-#ifndef LibLanc_NonBlocking_h
-#define LibLanc_NonBlocking_h
-
 #include <stdint.h>
 
 #include <memory>
 
 #include "Lanc.h"
+
+#ifndef LibLanc_NonBlocking_h
+#define LibLanc_NonBlocking_h
 
 namespace LibLanc
 {

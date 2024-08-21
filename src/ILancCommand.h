@@ -1,7 +1,7 @@
+#include <stdint.h>
+
 #ifndef ILancCommand_h
 #define ILancCommand_h
-
-#include <stdint.h>
 
 namespace LibLanc
 {

@@ -10,7 +10,7 @@ namespace LibLanc
 namespace App
 {
 
-Lanc::Lanc(std::unique_ptr<Phy::PhysicalLayer> physicalLayer)
+Lanc::Lanc(std::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
     : _physicalLayer(std::move(physicalLayer)), _activeCommand(std::make_shared<Commands::EmptyCommand>())
 {
 }
