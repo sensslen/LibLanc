@@ -16,7 +16,7 @@ LancNonBlocking::LancNonBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLay
     , _transmitBuffer{ 0, 0, 0, 0 }
     , _receiveBuffer{ 0, 0, 0, 0 }
     , _timeStore(0)
-    , __currentBit(0)
+    , _currentBit(0)
     , _currentState(&LancNonBlocking::searchStart)
 {
 }
