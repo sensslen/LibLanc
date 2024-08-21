@@ -9,6 +9,8 @@
 
 namespace LibLanc
 {
+namespace App
+{
 
 class LancNonBlocking : public Lanc
 {
@@ -19,7 +21,7 @@ class LancNonBlocking : public Lanc
      * @param inputPin  The pin tu use to read LANC signals
      * @param outputPin The Pin to use to send LANC signals
      */
-    LancNonBlocking(uint8_t inputPin, uint8_t outputPin, bool isInverted);
+    LancNonBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLayer);
 
     /**
      * This function must be called as quickly as possible in order to not loose
@@ -34,19 +36,17 @@ class LancNonBlocking : public Lanc
     void loop() override;
 
   private:
-    int timePassed();
-
     uint8_t _transmitBuffer[4];
     uint8_t _receiveBuffer[4];
-    int timeStore;
-    uint8_t currentBit;
+    int _timeStore;
+    uint8_t _currentBit;
 
     // State machine
     /**
      * This variable represnets the current state of the
      * transmission state machine.
      */
-    void (LancNonBlocking::*currentState)();
+    void (LancNonBlocking::*_currentState)();
 
     /**
      * State representing the fact that we are currently searching for
@@ -66,8 +66,12 @@ class LancNonBlocking : public Lanc
      */
     bool transmitNextBit();
     bool receiveNextBit();
+    int timePassed();
+
+    const uint16_t LANC_COMPLETE_BYTE_TIME = (10 * LANC_BIT_TIME_US);
 };
 
+}  // namespace App
 }  // namespace LibLanc
 
 #endif  // LibLanc_NonBlocking_h

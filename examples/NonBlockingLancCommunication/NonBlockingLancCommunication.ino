@@ -9,11 +9,15 @@
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-LibLanc::LancNonBlocking lanc(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false);
+std::unique_ptr<LibLanc::App::Lanc> lanc;
 String receivedCommand = "";
 
 void setup()
 {
+    LibLanc::LancBuilder lancBuilder;
+    lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false);
+    lanc = lancBuilder.CreateNonBlocking();
+
     lanc.begin();
     Serial.begin(9600);
 

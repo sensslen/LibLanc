@@ -1,3 +1,3 @@
+#include "App/Lanc.h"
 #include "CommandFactory.h"
-#include "LancBlocking.h"
-#include "LancNonBlocking.h"
+#include "LancBuilder.h"

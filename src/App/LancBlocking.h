@@ -9,6 +9,8 @@
 
 namespace LibLanc
 {
+namespace App
+{
 
 class LancBlocking : public Lanc
 {
@@ -19,7 +21,7 @@ class LancBlocking : public Lanc
      * @param inputPin  The pin tu use to read LANC signals
      * @param outputPin The Pin to use to send LANC signals
      */
-    LancBlocking(uint8_t inputPin, uint8_t outputPin, bool isInverted);
+    LancBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLayer);
 
     /**
      * This function must be called as quickly as possible in order to not loose
@@ -51,8 +53,11 @@ class LancBlocking : public Lanc
     unsigned long waitForStartBit();
     void waitStartBitComplete(unsigned long startTime);
     void delayUsWithStartTime(unsigned long startTime, unsigned long waitTime);
+
+    const uint8_t LANC_STARTBIT_TIME_US = LANC_BIT_TIME_US;
 };
 
+}  // namespace App
 }  // namespace LibLanc
 
 #endif  // LibLanc_Blocking_h
