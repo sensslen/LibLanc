@@ -2,21 +2,14 @@
 
 #include "App/LancBlocking.h"
 #include "App/LancNonBlocking.h"
-#include "Phy/OnePinPhysicalLayer.h"
 #include "Phy/TwoPinPhysicalLayer.h"
 
 namespace LibLanc
 {
 
-void LancBuilder::UseOnePinPhysicalLayer(uint8_t pin, bool isInverted)
+void LancBuilder::UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType)
 {
-    _physicalLayer = std::make_unique<Phy::OnePinPhysicalLayer>(pin, isInverted);
-}
-
-void LancBuilder::UseTwoPinPhysicalLayer(
-    uint8_t inputPin, uint8_t outputPin, bool isSendInverted, bool isReceiveInverted)
-{
-    _physicalLayer = std::make_unique<Phy::TwoPinPhysicalLayer>(inputPin, outputPin, isSendInverted, isReceiveInverted);
+    _physicalLayer = std::make_unique<Phy::TwoPinPhysicalLayer>(inputPin, outputPin, outputType);
 }
 
 std::unique_ptr<App::Lanc> LancBuilder::CreateBlocking()

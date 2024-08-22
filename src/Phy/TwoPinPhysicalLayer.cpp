@@ -11,36 +11,38 @@ namespace LibLanc
 namespace Phy
 {
 
-TwoPinPhysicalLayer::TwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, bool invertSend, bool invertReceive)
-    : _inputPin(inputPin), _outputPin(outputPin), _invertSend(invertSend), _invertReceive(invertReceive)
+TwoPinPhysicalLayer::TwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, OutputType outputType)
+    : _inputPin(inputPin)
+    , _outputPin(outputPin)
+    , _outputType(outputType == OutputType::OpenCollector ? OUTPUT_OPEN_DRAIN : OUTPUT)
 {
 }
 
 void TwoPinPhysicalLayer::begin()
 {
     pinMode(_inputPin, INPUT);
-    pinMode(_outputPin, OUTPUT);
+    pinMode(_outputPin, _outputType);
     putIdle();
 }
 
 void TwoPinPhysicalLayer::putOne()
 {
-    digitalWrite(_outputPin, _invertSend ? LOW : HIGH);
+    digitalWrite(_outputPin, LOW);
 }
 
 void TwoPinPhysicalLayer::putZero()
 {
-    digitalWrite(_outputPin, _invertSend ? HIGH : LOW);
+    digitalWrite(_outputPin, HIGH);
 }
 
 void TwoPinPhysicalLayer::putIdle()
 {
-    putOne();
+    putZero();
 }
 
 bool TwoPinPhysicalLayer::readState()
 {
-    return digitalRead(_inputPin) == (_invertReceive ? HIGH : LOW);
+    return digitalRead(_inputPin) == LOW;
 }
 
 }  // namespace Phy

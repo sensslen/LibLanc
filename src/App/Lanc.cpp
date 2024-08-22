@@ -11,11 +11,11 @@ namespace App
 {
 
 Lanc::Lanc(std::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
-    : _physicalLayer(std::move(physicalLayer)), _activeCommand(std::make_shared<Commands::EmptyCommand>())
+    : _physicalLayer(std::move(physicalLayer)), _activeCommand(std::make_unique<Commands::EmptyCommand>())
 {
 }
 
-bool Lanc::setCommand(std::shared_ptr<ILancCommand> command)
+bool Lanc::setCommand(std::unique_ptr<ILancCommand> command)
 {
     if (_nextCommand && _nextCommand->getState() == ILancCommand::LancCommandState::Continue)
     {
@@ -37,7 +37,7 @@ void Lanc::switchToNextCommand()
             }
             else
             {
-                _activeCommand = std::make_shared<Commands::EmptyCommand>();
+                _activeCommand = std::make_unique<Commands::EmptyCommand>();
             }
 
             break;

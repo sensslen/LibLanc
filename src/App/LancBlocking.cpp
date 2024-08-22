@@ -100,7 +100,7 @@ unsigned long LancBlocking::syncTransmission()
     int stopConditionStart = micros();
     while ((micros() - stopConditionStart) < 3000)
     {
-        if (!_physicalLayer->readState())
+        if (_physicalLayer->readState())
         {
             stopConditionStart = micros();
         }
@@ -120,7 +120,7 @@ void LancBlocking::delayUsWithStartTime(unsigned long startTime, unsigned long w
 unsigned long LancBlocking::waitForStartBit()
 {
     unsigned long startTime = micros();
-    while (_physicalLayer->readState())
+    while (!_physicalLayer->readState())
     {
         startTime = micros();
     }

@@ -15,7 +15,7 @@ String receivedCommand = "";
 void setup()
 {
     LibLanc::LancBuilder lancBuilder;
-    lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false, false);
+    lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, LibLanc::Phy::OutputType::PushPull);
     lanc = lancBuilder.CreateNonBlocking();
 
     lanc.begin();
@@ -46,7 +46,7 @@ void checkCommand()
         char read = Serial.read();
         if (read == '\n')
         {
-            lanc.setCommand(LibLanc::CommandFactory::zoom(receivedCommand.toInt()));
+            lanc.setCommand(std::move(LibLanc::CommandFactory::zoom(receivedCommand.toInt())));
             receivedCommand = "";
             break;
         }

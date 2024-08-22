@@ -34,7 +34,7 @@ class Lanc
      * @return true: the command was successfully enqueued
      *         false: the command failed to be enqueued
      */
-    bool setCommand(std::shared_ptr<ILancCommand> command);
+    bool setCommand(std::unique_ptr<ILancCommand> command);
 
   protected:
     /**
@@ -56,10 +56,10 @@ class Lanc
     const uint8_t LANC_BIT_TIME_US = 104;
     const uint8_t LANC_HALF_BIT_TIME_US = (LANC_BIT_TIME_US) / 2;
 
-    std::shared_ptr<ILancCommand> _activeCommand;
+    std::unique_ptr<ILancCommand> _activeCommand;
 
   private:
-    std::shared_ptr<ILancCommand> _nextCommand;
+    std::unique_ptr<ILancCommand> _nextCommand;
 };
 
 }  // namespace App

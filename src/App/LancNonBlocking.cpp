@@ -34,7 +34,7 @@ int LancNonBlocking::timePassed()
 
 void LancNonBlocking::searchStart()
 {
-    if (!_physicalLayer->readState())
+    if (_physicalLayer->readState())
     {
         _timeStore = micros();
     }
@@ -46,7 +46,7 @@ void LancNonBlocking::searchStart()
 
 void LancNonBlocking::waitForTransmissionStart()
 {
-    if (!_physicalLayer->readState())
+    if (_physicalLayer->readState())
     {
         _currentBit = 0;
         _timeStore = micros();
@@ -82,7 +82,7 @@ void LancNonBlocking::waitForNextStartBit()
 {
     // make sure to only start searching for the start condition when the stop
     // condition is at least half way through
-    if ((timePassed() > (LANC_COMPLETE_BYTE_TIME - LANC_HALF_BIT_TIME_US)) && !_physicalLayer->readState())
+    if ((timePassed() > (LANC_COMPLETE_BYTE_TIME - LANC_HALF_BIT_TIME_US)) && _physicalLayer->readState())
     {
         _timeStore = micros();
         if (_currentBit >= (2 * 8))

@@ -8,24 +8,24 @@
 namespace LibLanc
 {
 
-std::shared_ptr<ILancCommand> CommandFactory::zoom(const uint8_t stepSize)
+std::unique_ptr<ILancCommand> CommandFactory::zoom(const uint8_t stepSize)
 {
-    return std::make_shared<Commands::ZoomCommand>(stepSize);
+    return std::make_unique<Commands::ZoomCommand>(stepSize);
 }
 
-std::shared_ptr<ILancCommand> CommandFactory::focus(const bool far)
+std::unique_ptr<ILancCommand> CommandFactory::focus(const bool far)
 {
-    return std::make_shared<Commands::FocusCommand>(far);
+    return std::make_unique<Commands::FocusCommand>(far);
 }
 
-std::shared_ptr<ILancCommand> CommandFactory::clear()
+std::unique_ptr<ILancCommand> CommandFactory::clear()
 {
-    return std::make_shared<Commands::EmptyCommand>();
+    return std::make_unique<Commands::EmptyCommand>();
 }
 
-std::shared_ptr<ILancCommand> CommandFactory::setAutoFocus(const bool enabled)
+std::unique_ptr<ILancCommand> CommandFactory::setAutoFocus(const bool enabled)
 {
-    return std::make_shared<Commands::AutoFocusCommand>(enabled);
+    return std::make_unique<Commands::AutoFocusCommand>(enabled);
 }
 
 }  // namespace LibLanc

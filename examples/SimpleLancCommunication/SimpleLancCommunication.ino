@@ -14,7 +14,7 @@ std::unique_ptr<LibLanc::App::Lanc> lanc;
 void setup()
 {
     LibLanc::LancBuilder lancBuilder;
-    lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, false, false);
+    lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, LibLanc::Phy::OutputType::PushPull);
     lanc = lancBuilder.CreateBlocking();
     lanc->begin();
 }

@@ -5,6 +5,7 @@
 #include "App/Lanc.h"
 #include "ILancCommand.h"
 #include "Phy/IPhysicalLayer.h"
+#include "Phy/OutputType.h"
 
 #ifndef LancBuilder_h
 #define LancBuilder_h
@@ -15,8 +16,7 @@ namespace LibLanc
 class LancBuilder
 {
   public:
-    void UseOnePinPhysicalLayer(uint8_t pin, bool isInverted);
-    void UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, bool isSendInverted, bool isReceiveInverted);
+    void UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType);
     std::unique_ptr<App::Lanc> CreateBlocking();
     std::unique_ptr<App::Lanc> CreateNonBlocking();
 

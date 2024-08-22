@@ -1,4 +1,5 @@
 #include "IPhysicalLayer.h"
+#include "OutputType.h"
 
 #ifndef TwoPinPhysicalLayer_h
 #define TwoPinPhysicalLayer_h
@@ -11,7 +12,7 @@ namespace Phy
 class TwoPinPhysicalLayer : public IPhysicalLayer
 {
   public:
-    TwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, bool invertSend, bool invertReceive);
+    TwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, OutputType outputType);
 
     virtual void putOne() override;
     virtual void putZero() override;
@@ -22,8 +23,7 @@ class TwoPinPhysicalLayer : public IPhysicalLayer
   private:
     uint8_t _inputPin;
     uint8_t _outputPin;
-    bool _invertSend;
-    bool _invertReceive;
+    uint8_t _outputType;
 };
 
 }  // namespace Phy
