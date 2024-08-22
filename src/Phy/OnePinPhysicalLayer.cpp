@@ -21,13 +21,13 @@ void OnePinPhysicalLayer::begin()
 void OnePinPhysicalLayer::putOne()
 {
     pinMode(_pin, OUTPUT);
-    digitalWrite(_pin, _isInverted ? LOW : HIGH);
+    digitalWrite(_pin, _isInverted ? HIGH : LOW);
 }
 
 void OnePinPhysicalLayer::putZero()
 {
     pinMode(_pin, OUTPUT);
-    digitalWrite(_pin, _isInverted ? HIGH : LOW);
+    digitalWrite(_pin, _isInverted ? LOW : HIGH);
 }
 
 void OnePinPhysicalLayer::putIdle()

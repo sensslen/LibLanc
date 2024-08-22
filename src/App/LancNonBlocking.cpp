@@ -11,7 +11,7 @@ namespace LibLanc
 namespace App
 {
 
-LancNonBlocking::LancNonBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLayer)
+LancNonBlocking::LancNonBlocking(std::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
     : Lanc(std::move(physicalLayer))
     , _transmitBuffer{ 0, 0, 0, 0 }
     , _receiveBuffer{ 0, 0, 0, 0 }
@@ -19,6 +19,7 @@ LancNonBlocking::LancNonBlocking(std::unique_ptr<Phy::PhysicalLayer> physicalLay
     , _currentBit(0)
     , _currentState(&LancNonBlocking::searchStart)
 {
+    _activeCommand->prepareTransmission(_transmitBuffer);
 }
 
 void LancNonBlocking::loop()
@@ -33,8 +34,6 @@ int LancNonBlocking::timePassed()
 
 void LancNonBlocking::searchStart()
 {
-    _activeCommand->prepareTransmission(_transmitBuffer);
-
     if (!_physicalLayer->readState())
     {
         _timeStore = micros();
@@ -110,6 +109,7 @@ void LancNonBlocking::waitToReceiveNextBit()
             {
                 _activeCommand->bytesReceived(_receiveBuffer);
                 switchToNextCommand();
+                _activeCommand->prepareTransmission(_transmitBuffer);
                 _currentState = &LancNonBlocking::searchStart;
             }
             else
