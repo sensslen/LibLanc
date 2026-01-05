@@ -1,0 +1,52 @@
+name: Update License Year
+
+on:
+  schedule:
+    # Run on January 1st at 00:00 UTC every year
+    - cron: '0 0 1 1 *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-license-year:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      
+      - name: Get current year
+        id: year
+        run: echo "current=$(date +%Y)" >> $GITHUB_OUTPUT
+      
+      - name: Update LICENSE file
+        run: |
+          CURRENT_YEAR=${{ steps.year.outputs.current }}
+          PREVIOUS_YEAR=$((CURRENT_YEAR - 1))
+          
+          # Update the copyright year in LICENSE file
+          sed -i "s/Copyright (c) $PREVIOUS_YEAR/Copyright (c) $CURRENT_YEAR/g" LICENSE
+      
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet LICENSE; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: Update license year to ${{ steps.year.outputs.current }}
+          title: Update license year to ${{ steps.year.outputs.current }}
+          body: |
+            This automated PR updates the copyright year in the LICENSE file to ${{ steps.year.outputs.current }}.
+            
+            This PR was automatically created by the Update License Year workflow.
+          branch: automated/update-license-year-${{ steps.year.outputs.current }}
+          delete-branch: true
