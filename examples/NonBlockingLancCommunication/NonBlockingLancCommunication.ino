@@ -18,7 +18,7 @@ void setup()
     lancBuilder.UseTwoPinPhysicalLayer(LANC_INPUT_PIN, LANC_OUTPUT_PIN, LibLanc::Phy::OutputType::PushPull);
     lanc = lancBuilder.CreateNonBlocking();
 
-    lanc.begin();
+    lanc->begin();
     Serial.begin(9600);
 
     while (!Serial)
@@ -36,7 +36,7 @@ void loop()
 
     // call loop as fast as possible
     // to not loose track of the lanc communication
-    lanc.loop();
+    lanc->loop();
 }
 
 void checkCommand()
@@ -46,7 +46,7 @@ void checkCommand()
         char read = Serial.read();
         if (read == '\n')
         {
-            lanc.setCommand(std::move(LibLanc::CommandFactory::zoom(receivedCommand.toInt())));
+            lanc->setCommand(std::move(LibLanc::CommandFactory::zoom(receivedCommand.toInt())));
             receivedCommand = "";
             break;
         }
