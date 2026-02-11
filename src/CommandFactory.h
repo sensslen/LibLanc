@@ -1,4 +1,4 @@
-#include "../liblanc_memory.h"
+#include "liblanc_memory.h"
 
 #include "ILancCommand.h"
 

@@ -13,7 +13,6 @@
 #define LIBLANC_CSTRING_H
 
 #include <stddef.h> // for size_t
-#include <stdint.h> // for uint8_t
 
 // Check if we should use standard library
 #if defined(__has_include) && __has_include(<cstring>) && !defined(LIBLANC_NO_STL)
