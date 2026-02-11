@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "../liblanc_memory.h"
+#include "liblanc_memory.h"
 
 #include "App/Lanc.h"
 #include "ILancCommand.h"

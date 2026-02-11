@@ -135,7 +135,7 @@ public:
     {
         if (_ptr != nullptr)
         {
-            Deleter()(_ptr);
+            _deleter(_ptr);
         }
     }
     
@@ -157,7 +157,7 @@ public:
         _ptr = ptr;
         if (old != nullptr)
         {
-            Deleter()(old);
+            _deleter(old);
         }
     }
     
