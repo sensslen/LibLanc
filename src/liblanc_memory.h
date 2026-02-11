@@ -37,6 +37,50 @@ using std::make_unique;
 // Based on C++ standard library specification
 // Reference: ISO/IEC 14882 (C++ Standard)
 
+// Type traits needed for unique_ptr
+template<typename T>
+struct remove_reference
+{
+    typedef T type;
+};
+
+template<typename T>
+struct remove_reference<T&>
+{
+    typedef T type;
+};
+
+template<typename T>
+struct remove_reference<T&&>
+{
+    typedef T type;
+};
+
+template<typename T>
+struct add_lvalue_reference
+{
+    typedef T& type;
+};
+
+template<typename T>
+struct add_lvalue_reference<T&>
+{
+    typedef T& type;
+};
+
+// Forward function declarations
+template<typename T>
+constexpr T&& forward(typename remove_reference<T>::type& t) noexcept
+{
+    return static_cast<T&&>(t);
+}
+
+template<typename T>
+constexpr T&& forward(typename remove_reference<T>::type&& t) noexcept
+{
+    return static_cast<T&&>(t);
+}
+
 // Default deleter for unique_ptr
 template<typename T>
 struct default_delete
@@ -154,56 +198,11 @@ private:
     Deleter _deleter;
 };
 
-// Helper for add_lvalue_reference (simplified)
-template<typename T>
-struct add_lvalue_reference
-{
-    typedef T& type;
-};
-
-template<typename T>
-struct add_lvalue_reference<T&>
-{
-    typedef T& type;
-};
-
 // make_unique implementation
 template<typename T, typename... Args>
 unique_ptr<T> make_unique(Args&&... args)
 {
     return unique_ptr<T>(new T(forward<Args>(args)...));
-}
-
-// Forward declaration helper
-template<typename T>
-struct remove_reference
-{
-    typedef T type;
-};
-
-template<typename T>
-struct remove_reference<T&>
-{
-    typedef T type;
-};
-
-template<typename T>
-struct remove_reference<T&&>
-{
-    typedef T type;
-};
-
-// Forward function
-template<typename T>
-constexpr T&& forward(typename remove_reference<T>::type& t) noexcept
-{
-    return static_cast<T&&>(t);
-}
-
-template<typename T>
-constexpr T&& forward(typename remove_reference<T>::type&& t) noexcept
-{
-    return static_cast<T&&>(t);
 }
 
 #endif // LIBLANC_USE_STD_MEMORY
