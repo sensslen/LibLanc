@@ -14,7 +14,7 @@ The following example shows how `LancBlocking` could be used:
 #include <Commands/ZoomCommand.h>
 #include <LibLanc.h>
 
-#include <memory>
+#include <liblanc_memory.h>
 
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>
@@ -22,7 +22,7 @@ The following example shows how `LancBlocking` could be used:
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-std::unique_ptr<LibLanc::App::Lanc> lanc;
+liblanc::unique_ptr<LibLanc::App::Lanc> lanc;
 
 void setup()
 {

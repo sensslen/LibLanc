@@ -1,5 +1,6 @@
 #include "CommandFactory.h"
 
+#include "liblanc_memory.h"
 #include "Commands/AutoFocusCommand.h"
 #include "Commands/EmptyCommand.h"
 #include "Commands/FocusCommand.h"
@@ -8,24 +9,24 @@
 namespace LibLanc
 {
 
-std::unique_ptr<ILancCommand> CommandFactory::zoom(const uint8_t stepSize)
+liblanc::unique_ptr<ILancCommand> CommandFactory::zoom(const uint8_t stepSize)
 {
-    return std::make_unique<Commands::ZoomCommand>(stepSize);
+    return liblanc::make_unique<Commands::ZoomCommand>(stepSize);
 }
 
-std::unique_ptr<ILancCommand> CommandFactory::focus(const bool far)
+liblanc::unique_ptr<ILancCommand> CommandFactory::focus(const bool far)
 {
-    return std::make_unique<Commands::FocusCommand>(far);
+    return liblanc::make_unique<Commands::FocusCommand>(far);
 }
 
-std::unique_ptr<ILancCommand> CommandFactory::clear()
+liblanc::unique_ptr<ILancCommand> CommandFactory::clear()
 {
-    return std::make_unique<Commands::EmptyCommand>();
+    return liblanc::make_unique<Commands::EmptyCommand>();
 }
 
-std::unique_ptr<ILancCommand> CommandFactory::setAutoFocus(const bool enabled)
+liblanc::unique_ptr<ILancCommand> CommandFactory::setAutoFocus(const bool enabled)
 {
-    return std::make_unique<Commands::AutoFocusCommand>(enabled);
+    return liblanc::make_unique<Commands::AutoFocusCommand>(enabled);
 }
 
 }  // namespace LibLanc

@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include <memory>
+#include "../liblanc_memory.h"
 
 #include "App/Lanc.h"
 #include "ILancCommand.h"
@@ -17,11 +17,11 @@ class LancBuilder
 {
   public:
     void UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType);
-    std::unique_ptr<App::Lanc> CreateBlocking();
-    std::unique_ptr<App::Lanc> CreateNonBlocking();
+    liblanc::unique_ptr<App::Lanc> CreateBlocking();
+    liblanc::unique_ptr<App::Lanc> CreateNonBlocking();
 
   private:
-    std::unique_ptr<Phy::IPhysicalLayer> _physicalLayer;
+    liblanc::unique_ptr<Phy::IPhysicalLayer> _physicalLayer;
 };
 
 }  // namespace LibLanc

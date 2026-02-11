@@ -1,7 +1,8 @@
 #include <LibLanc.h>
 #include <WString.h>
 
-#include <memory>
+#include <liblanc_memory.h>
+#include <liblanc_utility.h>
 
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>
@@ -9,7 +10,7 @@
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-std::unique_ptr<LibLanc::App::Lanc> lanc;
+liblanc::unique_ptr<LibLanc::App::Lanc> lanc;
 String receivedCommand = "";
 
 void setup()
@@ -46,7 +47,7 @@ void checkCommand()
         char read = Serial.read();
         if (read == '\n')
         {
-            lanc->setCommand(std::move(LibLanc::CommandFactory::zoom(receivedCommand.toInt())));
+            lanc->setCommand(liblanc::move(LibLanc::CommandFactory::zoom(receivedCommand.toInt())));
             receivedCommand = "";
             break;
         }

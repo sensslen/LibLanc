@@ -11,8 +11,8 @@ namespace LibLanc
 namespace App
 {
 
-LancNonBlocking::LancNonBlocking(std::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
-    : Lanc(std::move(physicalLayer))
+LancNonBlocking::LancNonBlocking(liblanc::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
+    : Lanc(liblanc::move(physicalLayer))
     , _transmitBuffer{ 0, 0, 0, 0 }
     , _receiveBuffer{ 0, 0, 0, 0 }
     , _timeStore(0)

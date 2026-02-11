@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include <memory>
+#include "../liblanc_memory.h"
 
 #include "Lanc.h"
 
@@ -21,7 +21,7 @@ class LancNonBlocking : public Lanc
      * @param inputPin  The pin tu use to read LANC signals
      * @param outputPin The Pin to use to send LANC signals
      */
-    LancNonBlocking(std::unique_ptr<Phy::IPhysicalLayer> physicalLayer);
+    LancNonBlocking(liblanc::unique_ptr<Phy::IPhysicalLayer> physicalLayer);
 
     /**
      * This function must be called as quickly as possible in order to not loose
