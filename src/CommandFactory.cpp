@@ -1,6 +1,5 @@
 #include "CommandFactory.h"
 
-#include "std/liblanc_memory.h"
 #include "Commands/AutoFocusCommand.h"
 #include "Commands/EmptyCommand.h"
 #include "Commands/FocusCommand.h"

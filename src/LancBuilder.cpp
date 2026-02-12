@@ -1,7 +1,5 @@
 #include "LancBuilder.h"
 
-#include "std/liblanc_memory.h"
-#include "std/liblanc_utility.h"
 #include "App/LancBlocking.h"
 #include "App/LancNonBlocking.h"
 #include "Phy/TwoPinPhysicalLayer.h"
