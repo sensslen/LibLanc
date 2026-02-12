@@ -6,7 +6,7 @@
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-LibLanc::std::unique_ptr<LibLanc::App::Lanc> lanc;
+std::unique_ptr<LibLanc::App::Lanc> lanc;
 
 void setup()
 {

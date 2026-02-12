@@ -1,6 +1,6 @@
 #include "EmptyCommand.h"
 
-#include "../liblanc_cstring.h"
+#include "../std/liblanc_cstring.h"
 
 namespace LibLanc
 {
@@ -9,7 +9,7 @@ namespace Commands
 
 void EmptyCommand::prepareTransmission(uint8_t (&bytes)[4])
 {
-    LibLanc::std::memset(bytes, 0, sizeof(bytes));
+    std::memset(bytes, 0, sizeof(bytes));
 }
 
 ILancCommand::LancCommandState EmptyCommand::getState() const

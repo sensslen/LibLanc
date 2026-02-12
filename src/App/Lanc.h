@@ -1,7 +1,7 @@
 
 #include <stdint.h>
 
-#include "../liblanc_memory.h"
+#include "../std/liblanc_memory.h"
 
 #include "../Phy/IPhysicalLayer.h"
 #include "ILancCommand.h"
@@ -34,7 +34,7 @@ class Lanc
      * @return true: the command was successfully enqueued
      *         false: the command failed to be enqueued
      */
-    bool setCommand(LibLanc::std::unique_ptr<ILancCommand> command);
+    bool setCommand(std::unique_ptr<ILancCommand> command);
 
   protected:
     /**
@@ -42,7 +42,7 @@ class Lanc
      * @param inputPin  The pin tu use to read LANC signals
      * @param outputPin The Pin to use to send LANC signals
      */
-    Lanc(LibLanc::std::unique_ptr<Phy::IPhysicalLayer> physicalLayer);
+    Lanc(std::unique_ptr<Phy::IPhysicalLayer> physicalLayer);
 
     /**
      * @brief switch to the next command to be used depending on the state of the current command and whether there is a
@@ -51,15 +51,15 @@ class Lanc
      */
     void switchToNextCommand();
 
-    LibLanc::std::unique_ptr<Phy::IPhysicalLayer> _physicalLayer;
+    std::unique_ptr<Phy::IPhysicalLayer> _physicalLayer;
 
     const uint8_t LANC_BIT_TIME_US = 104;
     const uint8_t LANC_HALF_BIT_TIME_US = (LANC_BIT_TIME_US) / 2;
 
-    LibLanc::std::unique_ptr<ILancCommand> _activeCommand;
+    std::unique_ptr<ILancCommand> _activeCommand;
 
   private:
-    LibLanc::std::unique_ptr<ILancCommand> _nextCommand;
+    std::unique_ptr<ILancCommand> _nextCommand;
 };
 
 }  // namespace App

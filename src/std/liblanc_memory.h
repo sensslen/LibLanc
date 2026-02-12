@@ -22,18 +22,12 @@
     #define LIBLANC_USE_STD_MEMORY 0
 #endif
 
-namespace LibLanc
-{
+
+
+#if !LIBLANC_USE_STD_MEMORY
+
 namespace std
 {
-
-#if LIBLANC_USE_STD_MEMORY
-
-// Use standard library implementations
-using ::std::unique_ptr;
-using ::std::make_unique;
-
-#else
 
 // Custom implementation when STL is not available
 // Based on C++ standard library specification
@@ -207,9 +201,8 @@ unique_ptr<T> make_unique(Args&&... args)
     return unique_ptr<T>(new T(forward<Args>(args)...));
 }
 
-#endif // LIBLANC_USE_STD_MEMORY
-
 } // namespace std
-} // namespace LibLanc
+
+#endif // LIBLANC_USE_STD_MEMORY
 
 #endif // LIBLANC_MEMORY_H

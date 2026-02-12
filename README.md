@@ -11,7 +11,6 @@ There is a non blocking variant of the Library available (see `LancNonBlocking` 
 The following example shows how `LancBlocking` could be used:
 
 ```c++
-#include <Commands/ZoomCommand.h>
 #include <LibLanc.h>
 
 // LibLanc
@@ -20,7 +19,7 @@ The following example shows how `LancBlocking` could be used:
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-LibLanc::std::unique_ptr<LibLanc::App::Lanc> lanc;
+std::unique_ptr<LibLanc::App::Lanc> lanc;
 
 void setup()
 {

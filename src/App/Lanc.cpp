@@ -1,7 +1,7 @@
 #include "Lanc.h"
 
-#include "../liblanc_memory.h"
-#include "../liblanc_utility.h"
+#include "../std/liblanc_memory.h"
+#include "../std/liblanc_utility.h"
 
 #include "Commands/EmptyCommand.h"
 
@@ -10,19 +10,19 @@ namespace LibLanc
 namespace App
 {
 
-Lanc::Lanc(LibLanc::std::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
-    : _physicalLayer(LibLanc::std::move(physicalLayer)), _activeCommand(LibLanc::std::make_unique<Commands::EmptyCommand>())
+Lanc::Lanc(std::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
+    : _physicalLayer(std::move(physicalLayer)), _activeCommand(std::make_unique<Commands::EmptyCommand>())
 {
 }
 
-bool Lanc::setCommand(LibLanc::std::unique_ptr<ILancCommand> command)
+bool Lanc::setCommand(std::unique_ptr<ILancCommand> command)
 {
     if (_nextCommand && _nextCommand->getState() == ILancCommand::LancCommandState::Continue)
     {
         return false;
     }
 
-    _nextCommand = LibLanc::std::move(command);
+    _nextCommand = std::move(command);
     return true;
 }
 
@@ -33,18 +33,18 @@ void Lanc::switchToNextCommand()
         case ILancCommand::LancCommandState::Complete:
             if (_nextCommand)
             {
-                _activeCommand = LibLanc::std::move(_nextCommand);
+                _activeCommand = std::move(_nextCommand);
             }
             else
             {
-                _activeCommand = LibLanc::std::make_unique<Commands::EmptyCommand>();
+                _activeCommand = std::make_unique<Commands::EmptyCommand>();
             }
 
             break;
         case ILancCommand::LancCommandState::CanContinue:
             if (_nextCommand)
             {
-                _activeCommand = LibLanc::std::move(_nextCommand);
+                _activeCommand = std::move(_nextCommand);
             }
             break;
         default:

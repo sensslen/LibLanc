@@ -9,10 +9,10 @@
 // The memset implementation is a standard C library function.
 // This provides a fallback when <cstring> is not available.
 
+#include <stddef.h> // for size_t
+
 #ifndef LIBLANC_CSTRING_H
 #define LIBLANC_CSTRING_H
-
-#include <stddef.h> // for size_t
 
 // Check if we should use standard library
 #if defined(__has_include) && __has_include(<cstring>) && !defined(LIBLANC_NO_STL)
@@ -22,18 +22,11 @@
     #define LIBLANC_USE_STD_CSTRING 0
 #endif
 
-namespace LibLanc
-{
+
+#if !LIBLANC_USE_STD_CSTRING
+
 namespace std
 {
-
-#if LIBLANC_USE_STD_CSTRING
-
-// Use standard library implementation
-using ::std::memset;
-
-#else
-
 // Custom implementation when STL is not available
 // memset is a standard C library function that fills a block of memory
 // with a specified value.
@@ -52,9 +45,8 @@ inline void* memset(void* ptr, int value, size_t num)
     return ptr;
 }
 
-#endif // LIBLANC_USE_STD_CSTRING
-
 } // namespace std
-} // namespace LibLanc
+
+#endif // LIBLANC_USE_STD_CSTRING
 
 #endif // LIBLANC_CSTRING_H

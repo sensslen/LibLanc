@@ -1,6 +1,6 @@
 #include "AutoFocusCommand.h"
 
-#include "../liblanc_cstring.h"
+#include "../std/liblanc_cstring.h"
 
 namespace LibLanc
 {
@@ -31,7 +31,7 @@ void AutoFocusCommand::bytesReceived(const uint8_t bytesReceived[4])
 
 void AutoFocusCommand::prepareTransmission(uint8_t (&bytes)[4])
 {
-    LibLanc::std::memset(bytes, 0, sizeof(bytes));
+    std::memset(bytes, 0, sizeof(bytes));
     // TODO: check if the desired state matches current state. Return Zero array when not known or reached, else call
     // VideoCameraSpecialCommand::prepareTransmission
 }
