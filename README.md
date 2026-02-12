@@ -14,7 +14,7 @@ The following example shows how `LancBlocking` could be used:
 #include <Commands/ZoomCommand.h>
 #include <LibLanc.h>
 
-#include <liblanc_memory.h>
+#include "liblanc_memory.h"
 
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>

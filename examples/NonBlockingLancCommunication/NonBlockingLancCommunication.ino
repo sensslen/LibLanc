@@ -1,8 +1,8 @@
 #include <LibLanc.h>
 #include <WString.h>
 
-#include <liblanc_memory.h>
-#include <liblanc_utility.h>
+#include "liblanc_memory.h"
+#include "liblanc_utility.h"
 
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>

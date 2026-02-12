@@ -1,6 +1,6 @@
 #include <LibLanc.h>
 
-#include <liblanc_memory.h>
+#include "liblanc_memory.h"
 
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>
