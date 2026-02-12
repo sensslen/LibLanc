@@ -17,11 +17,11 @@ class LancBuilder
 {
   public:
     void UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType);
-    liblanc::unique_ptr<App::Lanc> CreateBlocking();
-    liblanc::unique_ptr<App::Lanc> CreateNonBlocking();
+    LibLanc::std::unique_ptr<App::Lanc> CreateBlocking();
+    LibLanc::std::unique_ptr<App::Lanc> CreateNonBlocking();
 
   private:
-    liblanc::unique_ptr<Phy::IPhysicalLayer> _physicalLayer;
+    LibLanc::std::unique_ptr<Phy::IPhysicalLayer> _physicalLayer;
 };
 
 }  // namespace LibLanc

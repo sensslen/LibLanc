@@ -1,14 +1,12 @@
 #include <LibLanc.h>
 
-#include "liblanc_memory.h"
-
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>
 // This example illustrates the usage of the liblanc library in blocking mode
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-liblanc::unique_ptr<LibLanc::App::Lanc> lanc;
+LibLanc::std::unique_ptr<LibLanc::App::Lanc> lanc;
 
 void setup()
 {

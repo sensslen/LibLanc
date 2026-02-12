@@ -10,19 +10,19 @@ namespace LibLanc
 namespace App
 {
 
-Lanc::Lanc(liblanc::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
-    : _physicalLayer(liblanc::move(physicalLayer)), _activeCommand(liblanc::make_unique<Commands::EmptyCommand>())
+Lanc::Lanc(LibLanc::std::unique_ptr<Phy::IPhysicalLayer> physicalLayer)
+    : _physicalLayer(LibLanc::std::move(physicalLayer)), _activeCommand(LibLanc::std::make_unique<Commands::EmptyCommand>())
 {
 }
 
-bool Lanc::setCommand(liblanc::unique_ptr<ILancCommand> command)
+bool Lanc::setCommand(LibLanc::std::unique_ptr<ILancCommand> command)
 {
     if (_nextCommand && _nextCommand->getState() == ILancCommand::LancCommandState::Continue)
     {
         return false;
     }
 
-    _nextCommand = liblanc::move(command);
+    _nextCommand = LibLanc::std::move(command);
     return true;
 }
 
@@ -33,18 +33,18 @@ void Lanc::switchToNextCommand()
         case ILancCommand::LancCommandState::Complete:
             if (_nextCommand)
             {
-                _activeCommand = liblanc::move(_nextCommand);
+                _activeCommand = LibLanc::std::move(_nextCommand);
             }
             else
             {
-                _activeCommand = liblanc::make_unique<Commands::EmptyCommand>();
+                _activeCommand = LibLanc::std::make_unique<Commands::EmptyCommand>();
             }
 
             break;
         case ILancCommand::LancCommandState::CanContinue:
             if (_nextCommand)
             {
-                _activeCommand = liblanc::move(_nextCommand);
+                _activeCommand = LibLanc::std::move(_nextCommand);
             }
             break;
         default:

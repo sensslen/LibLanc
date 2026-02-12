@@ -9,7 +9,7 @@ namespace Commands
 
 void EmptyCommand::prepareTransmission(uint8_t (&bytes)[4])
 {
-    liblanc::memset(bytes, 0, sizeof(bytes));
+    LibLanc::std::memset(bytes, 0, sizeof(bytes));
 }
 
 ILancCommand::LancCommandState EmptyCommand::getState() const

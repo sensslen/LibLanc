@@ -18,7 +18,7 @@ class CommandFactory
      * Providing a value of 0 is the same as creating a clear command.
      * @return a shared pointer to be used by one of the blocking/non blocking libraries
      */
-    static liblanc::unique_ptr<ILancCommand> zoom(const uint8_t stepSize);
+    static LibLanc::std::unique_ptr<ILancCommand> zoom(const uint8_t stepSize);
 
     /**
      * @brief Cerate a focus command
@@ -26,14 +26,14 @@ class CommandFactory
      * @param far Whether to shift the focus farther away (true) or closer (false)
      * @return a shared pointer to be used by one of the blocking/non blocking libraries
      */
-    static liblanc::unique_ptr<ILancCommand> focus(const bool far);
+    static LibLanc::std::unique_ptr<ILancCommand> focus(const bool far);
 
     /**
      * @brief Create a clear command (basically clears any command that is currently being executed)
      *
      * @return a shared pointer to be used by one of the blocking/non blocking libraries
      */
-    static liblanc::unique_ptr<ILancCommand> clear();
+    static LibLanc::std::unique_ptr<ILancCommand> clear();
 
     /**
      * @brief Set the Auto Focus object
@@ -43,7 +43,7 @@ class CommandFactory
      * @param enabled Whether to enable or disable the auto focus
      * @return a shared pointer to be used by one of the blocking/non blocking libraries
      */
-    static liblanc::unique_ptr<ILancCommand> setAutoFocus(const bool enabled);
+    static LibLanc::std::unique_ptr<ILancCommand> setAutoFocus(const bool enabled);
 };
 
 }  // namespace LibLanc

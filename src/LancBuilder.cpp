@@ -11,27 +11,27 @@ namespace LibLanc
 
 void LancBuilder::UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType)
 {
-    _physicalLayer = liblanc::make_unique<Phy::TwoPinPhysicalLayer>(inputPin, outputPin, outputType);
+    _physicalLayer = LibLanc::std::make_unique<Phy::TwoPinPhysicalLayer>(inputPin, outputPin, outputType);
 }
 
-liblanc::unique_ptr<App::Lanc> LancBuilder::CreateBlocking()
+LibLanc::std::unique_ptr<App::Lanc> LancBuilder::CreateBlocking()
 {
     if (_physicalLayer == nullptr)
     {
-        return liblanc::unique_ptr<App::Lanc>();
+        return LibLanc::std::unique_ptr<App::Lanc>();
     }
 
-    return liblanc::make_unique<App::LancBlocking>(liblanc::move(_physicalLayer));
+    return LibLanc::std::make_unique<App::LancBlocking>(LibLanc::std::move(_physicalLayer));
 }
 
-liblanc::unique_ptr<App::Lanc> LancBuilder::CreateNonBlocking()
+LibLanc::std::unique_ptr<App::Lanc> LancBuilder::CreateNonBlocking()
 {
     if (_physicalLayer == nullptr)
     {
-        return liblanc::unique_ptr<App::Lanc>();
+        return LibLanc::std::unique_ptr<App::Lanc>();
     }
 
-    return liblanc::make_unique<App::LancNonBlocking>(liblanc::move(_physicalLayer));
+    return LibLanc::std::make_unique<App::LancNonBlocking>(LibLanc::std::move(_physicalLayer));
 }
 
 }  // namespace LibLanc

@@ -1,16 +1,13 @@
 #include <LibLanc.h>
 #include <WString.h>
 
-#include "liblanc_memory.h"
-#include "liblanc_utility.h"
-
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>
 // This example illustrates the usage of the liblanc library in blocking mode
 
 #define LANC_INPUT_PIN 2
 #define LANC_OUTPUT_PIN 3
-liblanc::unique_ptr<LibLanc::App::Lanc> lanc;
+LibLanc::std::unique_ptr<LibLanc::App::Lanc> lanc;
 String receivedCommand = "";
 
 void setup()
@@ -47,7 +44,7 @@ void checkCommand()
         char read = Serial.read();
         if (read == '\n')
         {
-            lanc->setCommand(liblanc::move(LibLanc::CommandFactory::zoom(receivedCommand.toInt())));
+            lanc->setCommand(LibLanc::std::move(LibLanc::CommandFactory::zoom(receivedCommand.toInt())));
             receivedCommand = "";
             break;
         }

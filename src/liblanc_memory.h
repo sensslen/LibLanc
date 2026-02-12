@@ -22,14 +22,16 @@
     #define LIBLANC_USE_STD_MEMORY 0
 #endif
 
-namespace liblanc
+namespace LibLanc
+{
+namespace std
 {
 
 #if LIBLANC_USE_STD_MEMORY
 
 // Use standard library implementations
-using std::unique_ptr;
-using std::make_unique;
+using ::std::unique_ptr;
+using ::std::make_unique;
 
 #else
 
@@ -207,6 +209,7 @@ unique_ptr<T> make_unique(Args&&... args)
 
 #endif // LIBLANC_USE_STD_MEMORY
 
-} // namespace liblanc
+} // namespace std
+} // namespace LibLanc
 
 #endif // LIBLANC_MEMORY_H

@@ -11,7 +11,7 @@ namespace LibLanc
 namespace App
 {
 
-LancBlocking::LancBlocking(liblanc::unique_ptr<Phy::IPhysicalLayer> physicalLayer) : Lanc(liblanc::move(physicalLayer)) {}
+LancBlocking::LancBlocking(LibLanc::std::unique_ptr<Phy::IPhysicalLayer> physicalLayer) : Lanc(LibLanc::std::move(physicalLayer)) {}
 
 void LancBlocking::loop()
 {

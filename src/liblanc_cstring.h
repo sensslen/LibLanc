@@ -22,13 +22,15 @@
     #define LIBLANC_USE_STD_CSTRING 0
 #endif
 
-namespace liblanc
+namespace LibLanc
+{
+namespace std
 {
 
 #if LIBLANC_USE_STD_CSTRING
 
 // Use standard library implementation
-using std::memset;
+using ::std::memset;
 
 #else
 
@@ -52,6 +54,7 @@ inline void* memset(void* ptr, int value, size_t num)
 
 #endif // LIBLANC_USE_STD_CSTRING
 
-} // namespace liblanc
+} // namespace std
+} // namespace LibLanc
 
 #endif // LIBLANC_CSTRING_H

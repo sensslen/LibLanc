@@ -25,13 +25,15 @@
     #define LIBLANC_USE_STD_UTILITY 0
 #endif
 
-namespace liblanc
+namespace LibLanc
+{
+namespace std
 {
 
 #if LIBLANC_USE_STD_UTILITY
 
 // Use standard library implementations
-using std::move;
+using ::std::move;
 
 #else
 
@@ -47,6 +49,7 @@ constexpr typename remove_reference<T>::type&& move(T&& t) noexcept
 
 #endif // LIBLANC_USE_STD_UTILITY
 
-} // namespace liblanc
+} // namespace std
+} // namespace LibLanc
 
 #endif // LIBLANC_UTILITY_H
