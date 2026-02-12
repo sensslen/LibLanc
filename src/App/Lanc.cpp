@@ -1,7 +1,7 @@
 #include "Lanc.h"
 
-#include <memory>
-#include <utility>
+#include "../std/liblanc_memory.h"
+#include "../std/liblanc_utility.h"
 
 #include "Commands/EmptyCommand.h"
 

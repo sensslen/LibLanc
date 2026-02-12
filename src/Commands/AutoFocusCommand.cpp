@@ -1,6 +1,6 @@
 #include "AutoFocusCommand.h"
 
-#include <cstring>
+#include "../std/liblanc_cstring.h"
 
 namespace LibLanc
 {

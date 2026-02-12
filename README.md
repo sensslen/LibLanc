@@ -11,10 +11,7 @@ There is a non blocking variant of the Library available (see `LancNonBlocking` 
 The following example shows how `LancBlocking` could be used:
 
 ```c++
-#include <Commands/ZoomCommand.h>
 #include <LibLanc.h>
-
-#include <memory>
 
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>

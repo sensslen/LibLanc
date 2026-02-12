@@ -1,7 +1,7 @@
 
 #include <stdint.h>
 
-#include <memory>
+#include "../std/liblanc_memory.h"
 
 #include "../Phy/IPhysicalLayer.h"
 #include "ILancCommand.h"

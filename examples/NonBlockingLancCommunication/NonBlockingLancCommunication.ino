@@ -1,8 +1,6 @@
 #include <LibLanc.h>
 #include <WString.h>
 
-#include <memory>
-
 // LibLanc
 // by Simon Ensslen <https://github.com/sensslen>
 // This example illustrates the usage of the liblanc library in blocking mode
