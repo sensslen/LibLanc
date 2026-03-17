@@ -1,5 +1,7 @@
 #include "LancNonBlocking.h"
 
+#include "../std/liblanc_utility.h"
+
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else

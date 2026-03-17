@@ -64,6 +64,41 @@ struct add_lvalue_reference<T&>
     typedef T& type;
 };
 
+template<bool B, typename T = void>
+struct enable_if
+{
+};
+
+template<typename T>
+struct enable_if<true, T>
+{
+    typedef T type;
+};
+
+template<typename T, typename U>
+struct is_same
+{
+    static constexpr bool value = false;
+};
+
+template<typename T>
+struct is_same<T, T>
+{
+    static constexpr bool value = true;
+};
+
+template<typename From, typename To>
+class is_convertible
+{
+    static char test(To);
+    static int test(...);
+
+    static From source();
+
+  public:
+    static constexpr bool value = sizeof(test(source())) == sizeof(char);
+};
+
 // Forward function declarations
 template<typename T>
 constexpr T&& forward(typename remove_reference<T>::type& t) noexcept
@@ -118,11 +153,31 @@ public:
     
     // Move constructor
     unique_ptr(unique_ptr&& other) noexcept : _ptr(other.release()) {}
+
+    // Converting move constructor (e.g. unique_ptr<Derived> -> unique_ptr<Base>)
+    template<typename U, typename OtherDeleter,
+             typename enable_if<is_convertible<U*, T*>::value, int>::type = 0>
+    unique_ptr(unique_ptr<U, OtherDeleter>&& other) noexcept : _ptr(other.release()) {}
     
     // Move assignment
     unique_ptr& operator=(unique_ptr&& other) noexcept
     {
         reset(other.release());
+        return *this;
+    }
+
+    // Converting move assignment (e.g. unique_ptr<Derived> -> unique_ptr<Base>)
+    template<typename U, typename OtherDeleter,
+             typename enable_if<is_convertible<U*, T*>::value, int>::type = 0>
+    unique_ptr& operator=(unique_ptr<U, OtherDeleter>&& other) noexcept
+    {
+        reset(other.release());
+        return *this;
+    }
+
+    unique_ptr& operator=(decltype(nullptr)) noexcept
+    {
+        reset();
         return *this;
     }
     
@@ -174,6 +229,16 @@ public:
     }
     
     explicit operator bool() const noexcept
+    {
+        return _ptr != nullptr;
+    }
+
+    bool operator==(decltype(nullptr)) const noexcept
+    {
+        return _ptr == nullptr;
+    }
+
+    bool operator!=(decltype(nullptr)) const noexcept
     {
         return _ptr != nullptr;
     }

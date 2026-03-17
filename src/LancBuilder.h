@@ -16,7 +16,7 @@ namespace LibLanc
 class LancBuilder
 {
   public:
-    void UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType);
+    void UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType = Phy::OutputType::PushPull);
     std::unique_ptr<App::Lanc> CreateBlocking();
     std::unique_ptr<App::Lanc> CreateNonBlocking();
 

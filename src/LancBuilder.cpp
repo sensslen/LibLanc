@@ -3,11 +3,12 @@
 #include "App/LancBlocking.h"
 #include "App/LancNonBlocking.h"
 #include "Phy/TwoPinPhysicalLayer.h"
+#include "std/liblanc_utility.h"
 
 namespace LibLanc
 {
 
-void LancBuilder::UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType)
+void LancBuilder::UseTwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Phy::OutputType outputType = Phy::OutputType::PushPull)
 {
     _physicalLayer = std::make_unique<Phy::TwoPinPhysicalLayer>(inputPin, outputPin, outputType);
 }

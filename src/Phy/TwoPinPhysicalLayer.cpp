@@ -14,8 +14,11 @@ namespace Phy
 TwoPinPhysicalLayer::TwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, OutputType outputType)
     : _inputPin(inputPin)
     , _outputPin(outputPin)
+#if defined(OUTPUT_OPEN_DRAIN)
     , _outputType(outputType == OutputType::OpenCollector ? OUTPUT_OPEN_DRAIN : OUTPUT)
-{
+#else
+    , _outputType(OUTPUT)
+#endif{
 }
 
 void TwoPinPhysicalLayer::begin()
