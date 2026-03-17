@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 #include "../std/liblanc_memory.h"
-
 #include "Lanc.h"
 
 #ifndef LibLanc_Blocking_h
