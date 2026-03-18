@@ -18,7 +18,8 @@ TwoPinPhysicalLayer::TwoPinPhysicalLayer(uint8_t inputPin, uint8_t outputPin, Ou
     , _outputType(outputType == OutputType::OpenCollector ? OUTPUT_OPEN_DRAIN : OUTPUT)
 #else
     , _outputType(OUTPUT)
-#endif{
+#endif
+{
 }
 
 void TwoPinPhysicalLayer::begin()
